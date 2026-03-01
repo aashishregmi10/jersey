@@ -1,3 +1,16 @@
+node_modules
+dist
+dist-ssr
+*.local
+
+# Environment variables — never commit these
+.env
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+backend/.env
+
 # Logs
 logs
 *.log
