@@ -7,15 +7,16 @@ import ProductModel from "../models/ProductModel.js";
 // @route   GET /api/admin/stats
 // @access  Admin
 export const getDashboardStats = asyncHandler(async (req, res) => {
-  const [totalUsers, totalOrders, totalProducts, revenueResult] = await Promise.all([
-    UserModel.countDocuments({ role: "customer" }),
-    OrderModel.countDocuments(),
-    ProductModel.countDocuments({ isActive: true }),
-    OrderModel.aggregate([
-      { $match: { status: { $in: ["delivered", "processing", "shipped"] } } },
-      { $group: { _id: null, total: { $sum: "$totalPrice" } } },
-    ]),
-  ]);
+  const [totalUsers, totalOrders, totalProducts, revenueResult] =
+    await Promise.all([
+      UserModel.countDocuments({ role: "customer" }),
+      OrderModel.countDocuments(),
+      ProductModel.countDocuments({ isActive: true }),
+      OrderModel.aggregate([
+        { $match: { status: { $in: ["delivered", "processing", "shipped"] } } },
+        { $group: { _id: null, total: { $sum: "$totalPrice" } } },
+      ]),
+    ]);
 
   const totalRevenue = revenueResult[0]?.total || 0;
 
@@ -29,7 +30,9 @@ export const getDashboardStats = asyncHandler(async (req, res) => {
 // @route   GET /api/admin/users
 // @access  Admin
 export const getAllUsers = asyncHandler(async (req, res) => {
-  const users = await UserModel.find().select("-password").sort({ createdAt: -1 });
+  const users = await UserModel.find()
+    .select("-password")
+    .sort({ createdAt: -1 });
   res.json({ success: true, users });
 });
 

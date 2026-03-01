@@ -8,28 +8,36 @@ export const loginUser = createAsyncThunk(
   "auth/login",
   async ({ email, password }, { rejectWithValue }) => {
     try {
-      const { data } = await axios.post(`${API_URL}/auth/login`, { email, password });
+      const { data } = await axios.post(`${API_URL}/auth/login`, {
+        email,
+        password,
+      });
       return data; // { success, user, token }
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || "Login failed. Please try again."
+        error.response?.data?.message || "Login failed. Please try again.",
       );
     }
-  }
+  },
 );
 
 export const registerUser = createAsyncThunk(
   "auth/register",
   async ({ name, email, password }, { rejectWithValue }) => {
     try {
-      const { data } = await axios.post(`${API_URL}/auth/register`, { name, email, password });
+      const { data } = await axios.post(`${API_URL}/auth/register`, {
+        name,
+        email,
+        password,
+      });
       return data; // { success, user, token }
     } catch (error) {
       return rejectWithValue(
-        error.response?.data?.message || "Registration failed. Please try again."
+        error.response?.data?.message ||
+          "Registration failed. Please try again.",
       );
     }
-  }
+  },
 );
 
 // ─── Slice ────────────────────────────────────────────────────────────────────
@@ -85,4 +93,3 @@ const authSlice = createSlice({
 
 export const { logout, clearError } = authSlice.actions;
 export default authSlice.reducer;
-

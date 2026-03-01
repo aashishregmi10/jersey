@@ -1,8 +1,10 @@
 import {
+  Badge,
   Box,
   Button,
   Container,
   Grid,
+  IconButton,
   Typography,
   Card,
   CardContent,
@@ -11,9 +13,13 @@ import {
   Chip,
 } from "@mui/material";
 import { useNavigate } from "react-router-dom";
+import { useDispatch, useSelector } from "react-redux";
+import { toast } from "react-toastify";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
+import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
+import { addItem, selectCartCount } from "store/cartSlice";
 
 const JERSEYS = [
   {
@@ -86,6 +92,23 @@ const FEATURES = [
 
 const HomeScreen = () => {
   const navigate = useNavigate();
+  const dispatch = useDispatch();
+  const cartCount = useSelector(selectCartCount);
+
+  const handleAddToCart = (jersey) => {
+    dispatch(
+      addItem({
+        _id: `static-${jersey.id}`,
+        name: `${jersey.team} Jersey`,
+        team: jersey.team,
+        price: 1200,
+        discountPrice: null,
+        images: [],
+        size: "M",
+      }),
+    );
+    toast.success(`${jersey.team} jersey added to cart!`, { autoClose: 1500 });
+  };
 
   return (
     <Box>
@@ -106,7 +129,20 @@ const HomeScreen = () => {
             Jersey Pasal
           </Typography>
         </Box>
-        <Stack direction="row" spacing={1}>
+        <Stack direction="row" spacing={1} alignItems="center">
+          <Button
+            variant="text"
+            size="small"
+            sx={{ color: "white" }}
+            onClick={() => navigate("/shop")}
+          >
+            Shop
+          </Button>
+          <IconButton sx={{ color: "white" }} onClick={() => navigate("/cart")}>
+            <Badge badgeContent={cartCount} color="error">
+              <ShoppingCartIcon />
+            </Badge>
+          </IconButton>
           <Button
             variant="outlined"
             size="small"
@@ -177,6 +213,7 @@ const HomeScreen = () => {
               px: 4,
               "&:hover": { bgcolor: "#e6c200" },
             }}
+            onClick={() => navigate("/shop")}
           >
             Shop Now
           </Button>
@@ -274,7 +311,11 @@ const HomeScreen = () => {
                       <Typography variant="h6" color="primary" fontWeight={700}>
                         {j.price}
                       </Typography>
-                      <Button variant="contained" size="small">
+                      <Button
+                        variant="contained"
+                        size="small"
+                        onClick={() => handleAddToCart(j)}
+                      >
                         Add to Cart
                       </Button>
                     </Box>

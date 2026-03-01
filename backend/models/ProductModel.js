@@ -7,13 +7,21 @@ const reviewSchema = new mongoose.Schema(
     rating: { type: Number, required: true, min: 1, max: 5 },
     comment: { type: String, required: true },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const productSchema = new mongoose.Schema(
   {
-    name: { type: String, required: [true, "Product name is required"], trim: true },
-    team: { type: String, required: [true, "Team name is required"], trim: true },
+    name: {
+      type: String,
+      required: [true, "Product name is required"],
+      trim: true,
+    },
+    team: {
+      type: String,
+      required: [true, "Team name is required"],
+      trim: true,
+    },
     league: { type: String, default: "FIFA World Cup 2026" },
     description: { type: String, default: "" },
     price: { type: Number, required: [true, "Price is required"], min: 0 },
@@ -32,7 +40,7 @@ const productSchema = new mongoose.Schema(
     isActive: { type: Boolean, default: true },
     createdBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const ProductModel = mongoose.model("Product", productSchema);

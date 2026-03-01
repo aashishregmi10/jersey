@@ -1,5 +1,9 @@
 import express from "express";
-import { getDashboardStats, getAllUsers, toggleUserStatus } from "../controllers/adminController.js";
+import {
+  getDashboardStats,
+  getAllUsers,
+  toggleUserStatus,
+} from "../controllers/adminController.js";
 import { protect, adminOnly } from "../middlewares/authMiddleware.js";
 
 const router = express.Router();

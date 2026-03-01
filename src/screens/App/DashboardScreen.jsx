@@ -4,12 +4,14 @@ import {
   Chip,
   Container,
   Divider,
+  Stack,
   Typography,
 } from "@mui/material";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import PersonIcon from "@mui/icons-material/Person";
 import LogoutIcon from "@mui/icons-material/Logout";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
+import ShoppingBagIcon from "@mui/icons-material/ShoppingBag";
 import { useNavigate } from "react-router-dom";
 import { toast } from "react-toastify";
 import useAuth from "hooks/useAuth";
@@ -127,14 +129,31 @@ const DashboardScreen = () => {
           </Box>
 
           {/* Actions */}
-          <Box sx={{ display: "flex", gap: 2, justifyContent: "center" }}>
+          <Stack direction="row" spacing={2} justifyContent="center" flexWrap="wrap">
             <Button
               variant="outlined"
               startIcon={<SportsSoccerIcon />}
-              onClick={() => navigate("/")}
+              onClick={() => navigate("/shop")}
             >
-              Go to Shop
+              Shop
             </Button>
+            <Button
+              variant="outlined"
+              startIcon={<ShoppingBagIcon />}
+              onClick={() => navigate("/app/orders")}
+            >
+              My Orders
+            </Button>
+            {isAdmin && (
+              <Button
+                variant="outlined"
+                color="secondary"
+                startIcon={<AdminPanelSettingsIcon />}
+                onClick={() => navigate("/app/admin")}
+              >
+                Admin Panel
+              </Button>
+            )}
             <Button
               variant="contained"
               color="error"
@@ -143,7 +162,7 @@ const DashboardScreen = () => {
             >
               Logout
             </Button>
-          </Box>
+          </Stack>
         </Box>
       </Container>
     </Box>

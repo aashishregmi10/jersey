@@ -5,7 +5,14 @@ import OrderModel from "../models/OrderModel.js";
 // @route   POST /api/orders
 // @access  Private
 export const placeOrder = asyncHandler(async (req, res) => {
-  const { items, shippingAddress, paymentMethod, subTotal, shippingPrice, totalPrice } = req.body;
+  const {
+    items,
+    shippingAddress,
+    paymentMethod,
+    subTotal,
+    shippingPrice,
+    totalPrice,
+  } = req.body;
 
   if (!items || items.length === 0) {
     res.status(400);
@@ -42,7 +49,7 @@ export const getMyOrders = asyncHandler(async (req, res) => {
 export const getOrderById = asyncHandler(async (req, res) => {
   const order = await OrderModel.findById(req.params.id).populate(
     "user",
-    "name email"
+    "name email",
   );
 
   if (!order) {
@@ -51,7 +58,10 @@ export const getOrderById = asyncHandler(async (req, res) => {
   }
 
   // Only owner or admin
-  if (order.user._id.toString() !== req.user._id.toString() && req.user.role !== "admin") {
+  if (
+    order.user._id.toString() !== req.user._id.toString() &&
+    req.user.role !== "admin"
+  ) {
     res.status(403);
     throw new Error("Not authorized");
   }
@@ -104,7 +114,13 @@ export const getAllOrders = asyncHandler(async (req, res) => {
     .limit(Number(limit))
     .skip((Number(page) - 1) * Number(limit));
 
-  res.json({ success: true, orders, total, page: Number(page), totalPages: Math.ceil(total / limit) });
+  res.json({
+    success: true,
+    orders,
+    total,
+    page: Number(page),
+    totalPages: Math.ceil(total / limit),
+  });
 });
 
 // @desc    Update order status (admin)

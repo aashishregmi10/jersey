@@ -7,7 +7,10 @@ import cors from "cors";
 
 import { connectDB } from "./config/db.config.js";
 import { getCorsOptions } from "./config/cors.config.js";
-import { ERROR_HANDLER, NOT_FOUND_HANDLER } from "./middlewares/errorMiddleware.js";
+import {
+  ERROR_HANDLER,
+  NOT_FOUND_HANDLER,
+} from "./middlewares/errorMiddleware.js";
 
 import authRoutes from "./routes/authRoutes.js";
 import productRoutes from "./routes/productRoutes.js";
@@ -28,7 +31,10 @@ app.use(cors(getCorsOptions()));
 
 // ── Health check ──────────────────────────────────────────────────────────────
 app.get("/", (_, res) => {
-  res.json({ message: "Jersey Pasal API running 🏃‍♂️", env: process.env.NODE_ENV });
+  res.json({
+    message: "Jersey Pasal API running 🏃‍♂️",
+    env: process.env.NODE_ENV,
+  });
 });
 
 // ── Routes ────────────────────────────────────────────────────────────────────
@@ -44,7 +50,9 @@ app.use(ERROR_HANDLER);
 // ── Start ─────────────────────────────────────────────────────────────────────
 const PORT = process.env.PORT || 5000;
 server.listen(PORT, () => {
-  console.log(`🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`);
+  console.log(
+    `🚀 Server running in ${process.env.NODE_ENV} mode on port ${PORT}`,
+  );
 });
 
 process.on("unhandledRejection", (error) => {

@@ -1,7 +1,11 @@
 import mongoose from "mongoose";
 
 const orderItemSchema = new mongoose.Schema({
-  product: { type: mongoose.Schema.Types.ObjectId, ref: "Product", required: true },
+  product: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Product",
+    required: true,
+  },
   name: { type: String, required: true },
   image: { type: String },
   price: { type: Number, required: true },
@@ -46,7 +50,7 @@ const orderSchema = new mongoose.Schema(
     cancelledAt: { type: Date },
     cancelReason: { type: String },
   },
-  { timestamps: true }
+  { timestamps: true },
 );
 
 const OrderModel = mongoose.model("Order", orderSchema);

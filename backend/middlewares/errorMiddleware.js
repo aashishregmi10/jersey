@@ -7,7 +7,10 @@ export const NOT_FOUND_HANDLER = (req, res, next) => {
 
 // Global error handler — must be placed last
 export const ERROR_HANDLER = (err, req, res, next) => {
-  const statusCode = err.statusCode || res.statusCode === 200 ? err.statusCode || 500 : res.statusCode;
+  const statusCode =
+    err.statusCode || res.statusCode === 200
+      ? err.statusCode || 500
+      : res.statusCode;
   res.status(statusCode).json({
     success: false,
     message: err.message || "Internal Server Error",

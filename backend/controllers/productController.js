@@ -48,7 +48,16 @@ export const getProductById = asyncHandler(async (req, res) => {
 // @route   POST /api/products
 // @access  Admin
 export const createProduct = asyncHandler(async (req, res) => {
-  const { name, team, league, description, price, discountPrice, sizes, stock } = req.body;
+  const {
+    name,
+    team,
+    league,
+    description,
+    price,
+    discountPrice,
+    sizes,
+    stock,
+  } = req.body;
 
   const product = await ProductModel.create({
     name,
@@ -110,16 +119,23 @@ export const createReview = asyncHandler(async (req, res) => {
   }
 
   const alreadyReviewed = product.reviews.find(
-    (r) => r.user.toString() === req.user._id.toString()
+    (r) => r.user.toString() === req.user._id.toString(),
   );
   if (alreadyReviewed) {
     res.status(400);
     throw new Error("You have already reviewed this product");
   }
 
-  product.reviews.push({ user: req.user._id, name: req.user.name, rating: Number(rating), comment });
+  product.reviews.push({
+    user: req.user._id,
+    name: req.user.name,
+    rating: Number(rating),
+    comment,
+  });
   product.numReviews = product.reviews.length;
-  product.rating = product.reviews.reduce((acc, r) => acc + r.rating, 0) / product.reviews.length;
+  product.rating =
+    product.reviews.reduce((acc, r) => acc + r.rating, 0) /
+    product.reviews.length;
 
   await product.save();
   res.status(201).json({ success: true, message: "Review added" });
