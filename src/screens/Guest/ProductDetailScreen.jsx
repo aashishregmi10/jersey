@@ -1,7 +1,6 @@
 import { useEffect, useState } from "react";
 import {
   Avatar,
-  Badge,
   Box,
   Button,
   Chip,
@@ -9,41 +8,47 @@ import {
   Container,
   Divider,
   Grid,
-  IconButton,
+  Paper,
   Rating,
   Stack,
+  Switch,
   TextField,
   ToggleButton,
   ToggleButtonGroup,
   Typography,
 } from "@mui/material";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
 import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
+import PrintIcon from "@mui/icons-material/Print";
 import { useNavigate, useParams } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
 import axios from "axios";
-import { addItem, selectCartCount } from "store/cartSlice";
+import { addItem } from "store/cartSlice";
 import useAuth from "hooks/useAuth";
+import JerseyCustomizer from "components/JerseyCustomizer";
 
 const API = import.meta.env.VITE_API_URL;
+const CUSTOMIZATION_FEE = 200;
 
 const ProductDetailScreen = () => {
   const { id } = useParams();
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const cartCount = useSelector(selectCartCount);
   const { token, isAuthenticated } = useAuth();
 
   const [product, setProduct] = useState(null);
   const [loading, setLoading] = useState(true);
   const [selectedSize, setSelectedSize] = useState("");
-  const [selectedImage, setSelectedImage] = useState(0);
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [reviewLoading, setReviewLoading] = useState(false);
+
+  // Customization state
+  const [customizeEnabled, setCustomizeEnabled] = useState(false);
+  const [playerName, setPlayerName] = useState("");
+  const [playerNumber, setPlayerNumber] = useState("");
 
   useEffect(() => {
     const fetchProduct = async () => {
@@ -62,19 +67,42 @@ const ProductDetailScreen = () => {
     fetchProduct();
   }, [id, navigate]);
 
+  const hasCustomization = !!(playerName.trim() || playerNumber);
+  const customizationPrice =
+    customizeEnabled && hasCustomization ? CUSTOMIZATION_FEE : 0;
+
   const handleAddToCart = () => {
     if (!selectedSize) {
       toast.warning("Please select a size");
       return;
     }
-    dispatch(addItem({ ...product, size: selectedSize }));
+    dispatch(
+      addItem({
+        ...product,
+        size: selectedSize,
+        playerName: customizeEnabled ? playerName.trim().toUpperCase() : "",
+        playerNumber:
+          customizeEnabled && playerNumber ? Number(playerNumber) : null,
+        customizationPrice,
+      }),
+    );
     toast.success(`${product.name} (${selectedSize}) added to cart!`);
   };
 
   const handleSubmitReview = async () => {
-    if (!rating) { toast.warning("Please select a rating"); return; }
-    if (!comment.trim()) { toast.warning("Please enter a comment"); return; }
-    if (!isAuthenticated) { toast.info("Please sign in to leave a review"); navigate("/sign-in"); return; }
+    if (!rating) {
+      toast.warning("Please select a rating");
+      return;
+    }
+    if (!comment.trim()) {
+      toast.warning("Please enter a comment");
+      return;
+    }
+    if (!isAuthenticated) {
+      toast.info("Please sign in to leave a review");
+      navigate("/sign-in");
+      return;
+    }
 
     setReviewLoading(true);
     try {
@@ -86,7 +114,6 @@ const ProductDetailScreen = () => {
       toast.success("Review submitted!");
       setRating(0);
       setComment("");
-      // Refresh product
       const { data } = await axios.get(`${API}/products/${id}`);
       setProduct(data.product);
     } catch (err) {
@@ -108,41 +135,12 @@ const ProductDetailScreen = () => {
 
   const displayPrice = product.discountPrice ?? product.price;
   const hasDiscount = !!product.discountPrice;
+  const jerseyPrimary = product.primaryColor || "#1565c0";
+  const jerseySecondary = product.secondaryColor || "#FFFFFF";
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "#f5f6fa" }}>
-      {/* ── Navbar ── */}
-      <Box
-        sx={{
-          bgcolor: "#0a1929",
-          px: { xs: 2, md: 4 },
-          py: 1.5,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          position: "sticky",
-          top: 0,
-          zIndex: 100,
-        }}
-      >
-        <Box
-          sx={{ display: "flex", alignItems: "center", gap: 1, cursor: "pointer" }}
-          onClick={() => navigate("/")}
-        >
-          <SportsSoccerIcon sx={{ color: "#FFD700" }} />
-          <Typography variant="h6" fontWeight={700} color="white">
-            Jersey Pasal
-          </Typography>
-        </Box>
-        <IconButton sx={{ color: "white" }} onClick={() => navigate("/cart")}>
-          <Badge badgeContent={cartCount} color="error">
-            <ShoppingCartIcon />
-          </Badge>
-        </IconButton>
-      </Box>
-
+    <Box sx={{ minHeight: "100vh", bgcolor: "#ffffff" }}>
       <Container sx={{ py: 4 }}>
-        {/* ── Back ── */}
         <Button
           startIcon={<ArrowBackIcon />}
           onClick={() => navigate("/shop")}
@@ -151,71 +149,9 @@ const ProductDetailScreen = () => {
           Back to Shop
         </Button>
 
-        <Grid container spacing={5}>
-          {/* ── Images ── */}
-          <Grid item xs={12} md={6}>
-            <Box
-              sx={{
-                borderRadius: 3,
-                overflow: "hidden",
-                bgcolor: "white",
-                boxShadow: 2,
-              }}
-            >
-              {product.images?.length > 0 ? (
-                <>
-                  <Box
-                    component="img"
-                    src={product.images[selectedImage]?.url}
-                    alt={product.name}
-                    sx={{
-                      width: "100%",
-                      height: 400,
-                      objectFit: "cover",
-                    }}
-                  />
-                  {product.images.length > 1 && (
-                    <Stack direction="row" spacing={1} p={1}>
-                      {product.images.map((img, idx) => (
-                        <Box
-                          key={idx}
-                          component="img"
-                          src={img.url}
-                          sx={{
-                            width: 64,
-                            height: 64,
-                            objectFit: "cover",
-                            borderRadius: 1,
-                            cursor: "pointer",
-                            border:
-                              selectedImage === idx
-                                ? "2px solid #1976d2"
-                                : "2px solid transparent",
-                          }}
-                          onClick={() => setSelectedImage(idx)}
-                        />
-                      ))}
-                    </Stack>
-                  )}
-                </>
-              ) : (
-                <Box
-                  sx={{
-                    height: 400,
-                    background: "linear-gradient(135deg,#0a1929 50%,#1565c0 50%)",
-                    display: "flex",
-                    alignItems: "center",
-                    justifyContent: "center",
-                  }}
-                >
-                  <SportsSoccerIcon sx={{ fontSize: 120, color: "rgba(255,255,255,0.3)" }} />
-                </Box>
-              )}
-            </Box>
-          </Grid>
-
-          {/* ── Info ── */}
-          <Grid item xs={12} md={6}>
+        <Grid container spacing={3}>
+          {/* ── LEFT: Product Info + Customization Fields ── */}
+          <Grid size={{ xs: 12, md: 5 }}>
             <Box sx={{ bgcolor: "white", borderRadius: 3, p: 3, boxShadow: 2 }}>
               <Chip label={product.league} size="small" sx={{ mb: 1 }} />
               <Typography variant="h4" fontWeight={800} gutterBottom>
@@ -225,14 +161,22 @@ const ProductDetailScreen = () => {
                 {product.team}
               </Typography>
 
-              <Box sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}>
-                <Rating value={product.rating} precision={0.5} readOnly size="small" />
+              <Box
+                sx={{ display: "flex", alignItems: "center", gap: 1, mb: 2 }}
+              >
+                <Rating
+                  value={product.rating}
+                  precision={0.5}
+                  readOnly
+                  size="small"
+                />
                 <Typography variant="body2" color="text.secondary">
                   ({product.numReviews} reviews)
                 </Typography>
               </Box>
 
-              <Box sx={{ mb: 3 }}>
+              {/* Price */}
+              <Box sx={{ mb: 2 }}>
                 {hasDiscount ? (
                   <Stack direction="row" spacing={1} alignItems="center">
                     <Typography
@@ -268,7 +212,7 @@ const ProductDetailScreen = () => {
 
               {/* Size selector */}
               {product.sizes?.length > 0 && (
-                <Box mb={3}>
+                <Box mb={2}>
                   <Typography variant="subtitle2" fontWeight={700} mb={1}>
                     Size: <strong>{selectedSize}</strong>
                   </Typography>
@@ -287,13 +231,137 @@ const ProductDetailScreen = () => {
                 </Box>
               )}
 
+              {/* ── Customization Section ── */}
+              <Paper
+                variant="outlined"
+                sx={{
+                  p: 2.5,
+                  borderRadius: 2,
+                  mb: 2,
+                  borderColor: customizeEnabled ? "#1565c0" : "#e0e0e0",
+                  bgcolor: customizeEnabled
+                    ? "rgba(21,101,192,0.03)"
+                    : "transparent",
+                  transition: "all 0.2s",
+                }}
+              >
+                <Box
+                  sx={{
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "space-between",
+                  }}
+                >
+                  <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
+                    <PrintIcon sx={{ color: "#1565c0" }} />
+                    <Box>
+                      <Typography variant="subtitle2" fontWeight={700}>
+                        Custom Printing
+                      </Typography>
+                      <Typography variant="caption" color="text.secondary">
+                        Add your name &amp; number (+Rs. {CUSTOMIZATION_FEE})
+                      </Typography>
+                    </Box>
+                  </Box>
+                  <Switch
+                    checked={customizeEnabled}
+                    onChange={(e) => setCustomizeEnabled(e.target.checked)}
+                    color="primary"
+                  />
+                </Box>
+
+                {customizeEnabled && (
+                  <Stack spacing={2} mt={2}>
+                    <TextField
+                      label="Player Name"
+                      placeholder="e.g. MESSI"
+                      value={playerName}
+                      onChange={(e) =>
+                        setPlayerName(e.target.value.toUpperCase().slice(0, 12))
+                      }
+                      inputProps={{ maxLength: 12 }}
+                      size="small"
+                      fullWidth
+                      helperText={`${playerName.length}/12 characters`}
+                    />
+                    <TextField
+                      label="Player Number"
+                      placeholder="e.g. 10"
+                      type="number"
+                      value={playerNumber}
+                      onChange={(e) => {
+                        const v = e.target.value;
+                        if (v === "" || (Number(v) >= 1 && Number(v) <= 99)) {
+                          setPlayerNumber(v);
+                        }
+                      }}
+                      inputProps={{ min: 1, max: 99 }}
+                      size="small"
+                      fullWidth
+                      helperText="Number between 1–99"
+                    />
+                  </Stack>
+                )}
+              </Paper>
+
+              {/* ── Price Breakdown ── */}
+              <Box sx={{ bgcolor: "#f5f8fc", borderRadius: 2, p: 2, mb: 2 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    mb: 0.5,
+                  }}
+                >
+                  <Typography variant="body2">Jersey Price</Typography>
+                  <Typography variant="body2" fontWeight={600}>
+                    Rs. {displayPrice.toLocaleString()}
+                  </Typography>
+                </Box>
+                {customizationPrice > 0 && (
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      mb: 0.5,
+                    }}
+                  >
+                    <Typography variant="body2" sx={{ color: "#1565c0" }}>
+                      🖨️ Custom Printing
+                    </Typography>
+                    <Typography
+                      variant="body2"
+                      fontWeight={600}
+                      sx={{ color: "#1565c0" }}
+                    >
+                      + Rs. {CUSTOMIZATION_FEE}
+                    </Typography>
+                  </Box>
+                )}
+                <Divider sx={{ my: 1 }} />
+                <Box sx={{ display: "flex", justifyContent: "space-between" }}>
+                  <Typography variant="subtitle1" fontWeight={700}>
+                    Total
+                  </Typography>
+                  <Typography
+                    variant="subtitle1"
+                    fontWeight={700}
+                    color="primary"
+                  >
+                    Rs. {(displayPrice + customizationPrice).toLocaleString()}
+                  </Typography>
+                </Box>
+              </Box>
+
               {/* Stock */}
               <Typography
                 variant="body2"
                 color={product.stock > 0 ? "success.main" : "error.main"}
                 mb={2}
               >
-                {product.stock > 0 ? `In Stock (${product.stock} available)` : "Out of Stock"}
+                {product.stock > 0
+                  ? `In Stock (${product.stock} available)`
+                  : "Out of Stock"}
               </Typography>
 
               <Stack direction="row" spacing={2}>
@@ -322,6 +390,63 @@ const ProductDetailScreen = () => {
               </Stack>
             </Box>
           </Grid>
+
+          {/* ── RIGHT: Live Jersey Preview (sticky, side by side) ── */}
+          <Grid size={{ xs: 12, md: 7 }}>
+            <Box
+              sx={{
+                position: { md: "sticky" },
+                top: { md: 80 },
+                borderRadius: 4,
+                overflow: "hidden",
+                background:
+                  "linear-gradient(145deg, rgba(21,101,192,0.08) 0%, rgba(10,25,41,0.06) 100%)",
+                border: "1px solid rgba(21,101,192,0.12)",
+                boxShadow: "0 4px 24px rgba(21,101,192,0.08)",
+                p: { xs: 3, md: 4 },
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                minHeight: 420,
+              }}
+            >
+              <Typography
+                variant="overline"
+                sx={{
+                  color: "#1565c0",
+                  fontWeight: 700,
+                  letterSpacing: 2,
+                  mb: 2,
+                }}
+              >
+                Live Jersey Preview
+              </Typography>
+
+              <JerseyCustomizer
+                primaryColor={jerseyPrimary}
+                secondaryColor={jerseySecondary}
+                playerName={customizeEnabled ? playerName : ""}
+                playerNumber={
+                  customizeEnabled && playerNumber ? playerNumber : null
+                }
+                width={320}
+                height={400}
+              />
+
+              {customizeEnabled && hasCustomization && (
+                <Chip
+                  icon={<PrintIcon />}
+                  label={`${playerName || ""} ${playerNumber ? "#" + playerNumber : ""}`}
+                  sx={{
+                    mt: 2,
+                    bgcolor: "rgba(21,101,192,0.1)",
+                    color: "#1565c0",
+                    fontWeight: 700,
+                  }}
+                />
+              )}
+            </Box>
+          </Grid>
         </Grid>
 
         {/* ── Reviews ── */}
@@ -330,12 +455,26 @@ const ProductDetailScreen = () => {
             Customer Reviews
           </Typography>
 
-          {/* Write a review */}
-          <Box sx={{ bgcolor: "white", borderRadius: 3, p: 3, boxShadow: 1, mb: 4 }}>
+          <Box
+            sx={{
+              bgcolor: "white",
+              borderRadius: 3,
+              p: 3,
+              boxShadow: 1,
+              mb: 4,
+            }}
+          >
             <Typography variant="subtitle1" fontWeight={700} mb={2}>
               Write a Review
             </Typography>
-            <Box sx={{ display: "flex", flexDirection: "column", gap: 2, maxWidth: 500 }}>
+            <Box
+              sx={{
+                display: "flex",
+                flexDirection: "column",
+                gap: 2,
+                maxWidth: 500,
+              }}
+            >
               <Rating
                 value={rating}
                 onChange={(_, v) => setRating(v)}
@@ -360,7 +499,6 @@ const ProductDetailScreen = () => {
             </Box>
           </Box>
 
-          {/* Review list */}
           {product.reviews.length === 0 ? (
             <Typography color="text.secondary">
               No reviews yet. Be the first!
@@ -370,7 +508,12 @@ const ProductDetailScreen = () => {
               {product.reviews.map((r) => (
                 <Box
                   key={r._id}
-                  sx={{ bgcolor: "white", borderRadius: 3, p: 2.5, boxShadow: 1 }}
+                  sx={{
+                    bgcolor: "white",
+                    borderRadius: 3,
+                    p: 2.5,
+                    boxShadow: 1,
+                  }}
                 >
                   <Stack direction="row" spacing={2} alignItems="flex-start">
                     <Avatar sx={{ bgcolor: "#1565c0" }}>
@@ -379,7 +522,11 @@ const ProductDetailScreen = () => {
                     <Box>
                       <Typography fontWeight={700}>{r.name}</Typography>
                       <Rating value={r.rating} readOnly size="small" />
-                      <Typography variant="body2" color="text.secondary" mt={0.5}>
+                      <Typography
+                        variant="body2"
+                        color="text.secondary"
+                        mt={0.5}
+                      >
                         {r.comment}
                       </Typography>
                       <Typography variant="caption" color="text.disabled">

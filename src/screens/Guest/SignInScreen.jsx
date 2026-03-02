@@ -17,26 +17,25 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useNavigate, Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
-import { loginUser } from "store/authSlice";
+import { setCredentials } from "store/authSlice";
+import { useLoginMutation } from "store/authApi";
 import useAuth from "hooks/useAuth";
 
 const SignInScreen = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { isAuthenticated, loading, error } = useAuth();
+  const { isAuthenticated, isAdmin } = useAuth();
+  const [login, { isLoading }] = useLoginMutation();
 
   const [form, setForm] = useState({ email: "", password: "" });
   const [showPassword, setShowPassword] = useState(false);
 
   // Redirect if already logged in
   useEffect(() => {
-    if (isAuthenticated) navigate("/app/dashboard", { replace: true });
-  }, [isAuthenticated, navigate]);
-
-  // Show error toast
-  useEffect(() => {
-    if (error) toast.error(error);
-  }, [error]);
+    if (isAuthenticated) {
+      navigate(isAdmin ? "/app/admin" : "/app/dashboard", { replace: true });
+    }
+  }, [isAuthenticated, isAdmin, navigate]);
 
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
@@ -45,12 +44,18 @@ const SignInScreen = () => {
     e.preventDefault();
     if (!form.email || !form.password)
       return toast.error("Please fill in all fields");
-    const result = await dispatch(
-      loginUser({ email: form.email, password: form.password }),
-    );
-    if (loginUser.fulfilled.match(result)) {
+    try {
+      const data = await login({
+        email: form.email,
+        password: form.password,
+      }).unwrap();
+      dispatch(setCredentials({ user: data.user, token: data.token }));
       toast.success("Login successful!");
-      navigate("/app/dashboard", { replace: true });
+      navigate(data.user?.role === "admin" ? "/app/admin" : "/app/dashboard", {
+        replace: true,
+      });
+    } catch (err) {
+      toast.error(err?.data?.message || "Login failed. Please try again.");
     }
   };
 
@@ -116,10 +121,10 @@ const SignInScreen = () => {
                 variant="contained"
                 fullWidth
                 size="large"
-                disabled={loading}
+                disabled={isLoading}
                 sx={{ py: 1.4, fontWeight: 700 }}
               >
-                {loading ? (
+                {isLoading ? (
                   <CircularProgress size={22} color="inherit" />
                 ) : (
                   "Sign In"
@@ -144,14 +149,15 @@ const SignInScreen = () => {
               color="text.secondary"
               display="block"
             >
-              <strong>Demo — Admin:</strong> admin@jersey.com / admin123
+              <strong>Admin:</strong> admin@jerseypasal.com / Admin@1234
             </Typography>
             <Typography
               variant="caption"
               color="text.secondary"
               display="block"
             >
-              <strong>Demo — Customer:</strong> any other email &amp; password
+              <strong>Note:</strong> Run <code>npm run seed:admin</code> in
+              backend first
             </Typography>
           </Box>
         </Paper>

@@ -17,13 +17,15 @@ import VisibilityOff from "@mui/icons-material/VisibilityOff";
 import { useNavigate, Link } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { toast } from "react-toastify";
-import { registerUser } from "store/authSlice";
+import { setCredentials } from "store/authSlice";
+import { useRegisterMutation } from "store/authApi";
 import useAuth from "hooks/useAuth";
 
 const RegisterScreen = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const { isAuthenticated, loading, error } = useAuth();
+  const { isAuthenticated } = useAuth();
+  const [register, { isLoading }] = useRegisterMutation();
 
   const [form, setForm] = useState({
     name: "",
@@ -37,10 +39,6 @@ const RegisterScreen = () => {
     if (isAuthenticated) navigate("/app/dashboard", { replace: true });
   }, [isAuthenticated, navigate]);
 
-  useEffect(() => {
-    if (error) toast.error(error);
-  }, [error]);
-
   const handleChange = (e) =>
     setForm({ ...form, [e.target.name]: e.target.value });
 
@@ -53,16 +51,19 @@ const RegisterScreen = () => {
     if (form.password.length < 6)
       return toast.error("Password must be at least 6 characters");
 
-    const result = await dispatch(
-      registerUser({
+    try {
+      const data = await register({
         name: form.name,
         email: form.email,
         password: form.password,
-      }),
-    );
-    if (registerUser.fulfilled.match(result)) {
+      }).unwrap();
+      dispatch(setCredentials({ user: data.user, token: data.token }));
       toast.success("Account created!");
       navigate("/app/dashboard", { replace: true });
+    } catch (err) {
+      toast.error(
+        err?.data?.message || "Registration failed. Please try again.",
+      );
     }
   };
 
@@ -141,10 +142,10 @@ const RegisterScreen = () => {
                 variant="contained"
                 fullWidth
                 size="large"
-                disabled={loading}
+                disabled={isLoading}
                 sx={{ py: 1.4, fontWeight: 700 }}
               >
-                {loading ? (
+                {isLoading ? (
                   <CircularProgress size={22} color="inherit" />
                 ) : (
                   "Create Account"

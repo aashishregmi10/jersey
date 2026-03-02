@@ -1,339 +1,225 @@
-import {
-  Badge,
-  Box,
-  Button,
-  Container,
-  Grid,
-  IconButton,
-  Typography,
-  Card,
-  CardContent,
-  CardMedia,
-  Stack,
-  Chip,
-} from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { toast } from "react-toastify";
+import { Box, Button, Container, Grid, Stack, Typography } from "@mui/material";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
-import EmojiEventsIcon from "@mui/icons-material/EmojiEvents";
+import ArrowForwardIcon from "@mui/icons-material/ArrowForward";
+import CheckroomIcon from "@mui/icons-material/Checkroom";
+import EditIcon from "@mui/icons-material/Edit";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
-import { addItem, selectCartCount } from "store/cartSlice";
+import { useNavigate } from "react-router-dom";
+import { useGetProductsQuery } from "store/productApi";
+import ProductCard from "components/ProductCard";
+import ProductCardSkeleton from "components/ProductCardSkeleton";
+import JerseyCustomizer from "components/JerseyCustomizer";
 
-const JERSEYS = [
+const STEPS = [
   {
-    id: 1,
-    team: "Brazil",
-    league: "FIFA World Cup",
-    color: "#FFD700",
-    bg: "#009C3B",
-    price: "Rs. 1,200",
+    icon: <CheckroomIcon sx={{ fontSize: 40, color: "#1565c0" }} />,
+    title: "Pick a Jersey",
+    desc: "Browse our FIFA World Cup 2026 collection",
   },
   {
-    id: 2,
-    team: "Argentina",
-    league: "FIFA World Cup",
-    color: "#74ACDF",
-    bg: "#003087",
-    price: "Rs. 1,200",
+    icon: <EditIcon sx={{ fontSize: 40, color: "#1565c0" }} />,
+    title: "Add Name & Number",
+    desc: "Personalize with your name and favourite number",
   },
   {
-    id: 3,
-    team: "France",
-    league: "FIFA World Cup",
-    color: "#FFFFFF",
-    bg: "#002395",
-    price: "Rs. 1,200",
-  },
-  {
-    id: 4,
-    team: "Germany",
-    league: "FIFA World Cup",
-    color: "#000000",
-    bg: "#FFFFFF",
-    price: "Rs. 1,200",
-  },
-  {
-    id: 5,
-    team: "England",
-    league: "FIFA World Cup",
-    color: "#CF081F",
-    bg: "#FFFFFF",
-    price: "Rs. 1,200",
-  },
-  {
-    id: 6,
-    team: "Spain",
-    league: "FIFA World Cup",
-    color: "#AA151B",
-    bg: "#F1BF00",
-    price: "Rs. 1,200",
-  },
-];
-
-const FEATURES = [
-  {
-    icon: <SportsSoccerIcon sx={{ fontSize: 40, color: "#1976d2" }} />,
-    title: "Official Quality",
-    desc: "Premium fabric used by real clubs",
-  },
-  {
-    icon: <EmojiEventsIcon sx={{ fontSize: 40, color: "#1976d2" }} />,
-    title: "World Cup 2026",
-    desc: "All 48 nations available",
-  },
-  {
-    icon: <LocalShippingIcon sx={{ fontSize: 40, color: "#1976d2" }} />,
-    title: "Fast Delivery",
-    desc: "Delivered across Nepal in 3–5 days",
+    icon: <LocalShippingIcon sx={{ fontSize: 40, color: "#1565c0" }} />,
+    title: "We Print & Deliver",
+    desc: "Custom printed and shipped to your doorstep",
   },
 ];
 
 const HomeScreen = () => {
   const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const cartCount = useSelector(selectCartCount);
-
-  const handleAddToCart = (jersey) => {
-    dispatch(
-      addItem({
-        _id: `static-${jersey.id}`,
-        name: `${jersey.team} Jersey`,
-        team: jersey.team,
-        price: 1200,
-        discountPrice: null,
-        images: [],
-        size: "M",
-      }),
-    );
-    toast.success(`${jersey.team} jersey added to cart!`, { autoClose: 1500 });
-  };
+  const { data, isLoading } = useGetProductsQuery({ limit: 50, page: 1 });
+  const products = data?.products ?? [];
 
   return (
-    <Box>
-      {/* ── Navbar ── */}
+    <Box sx={{ bgcolor: "#ffffff", minHeight: "80vh" }}>
+      {/* ── Hero Section ── */}
       <Box
         sx={{
-          bgcolor: "#0a1929",
-          px: 4,
-          py: 1.5,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-        }}
-      >
-        <Box sx={{ display: "flex", alignItems: "center", gap: 1 }}>
-          <SportsSoccerIcon sx={{ color: "#FFD700" }} />
-          <Typography variant="h6" fontWeight={700} color="white">
-            Jersey Pasal
-          </Typography>
-        </Box>
-        <Stack direction="row" spacing={1} alignItems="center">
-          <Button
-            variant="text"
-            size="small"
-            sx={{ color: "white" }}
-            onClick={() => navigate("/shop")}
-          >
-            Shop
-          </Button>
-          <IconButton sx={{ color: "white" }} onClick={() => navigate("/cart")}>
-            <Badge badgeContent={cartCount} color="error">
-              <ShoppingCartIcon />
-            </Badge>
-          </IconButton>
-          <Button
-            variant="outlined"
-            size="small"
-            sx={{ color: "white", borderColor: "white" }}
-            onClick={() => navigate("/sign-in")}
-          >
-            Sign In
-          </Button>
-          <Button
-            variant="contained"
-            size="small"
-            sx={{
-              bgcolor: "#FFD700",
-              color: "#0a1929",
-              fontWeight: 700,
-              "&:hover": { bgcolor: "#e6c200" },
-            }}
-            onClick={() => navigate("/sign-up")}
-          >
-            Register
-          </Button>
-        </Stack>
-      </Box>
-
-      {/* ── Hero ── */}
-      <Box
-        sx={{
-          background: "linear-gradient(135deg, #0a1929 0%, #1565c0 100%)",
-          py: { xs: 8, md: 14 },
-          textAlign: "center",
+          background:
+            "linear-gradient(135deg, #1565c0 0%, #1e88e5 50%, #1976d2 100%)",
           color: "white",
-          px: 2,
+          py: { xs: 6, md: 8 },
+          position: "relative",
+          overflow: "hidden",
         }}
       >
-        <Chip
-          label="FIFA World Cup 2026 🏆"
-          sx={{
-            bgcolor: "#FFD700",
-            color: "#0a1929",
-            fontWeight: 700,
-            mb: 3,
-            fontSize: 14,
-          }}
-        />
-        <Typography
-          variant="h2"
-          fontWeight={800}
-          gutterBottom
-          sx={{ fontSize: { xs: "2rem", md: "3.5rem" } }}
-        >
-          Official World Cup Jerseys
-        </Typography>
-        <Typography
-          variant="h6"
-          sx={{ opacity: 0.8, mb: 4, maxWidth: 520, mx: "auto" }}
-        >
-          Get your favourite team&apos;s jersey for the biggest football event
-          of 2026. Delivered to your doorstep across Nepal.
-        </Typography>
-        <Stack direction="row" spacing={2} justifyContent="center">
-          <Button
-            variant="contained"
-            size="large"
-            sx={{
-              bgcolor: "#FFD700",
-              color: "#0a1929",
-              fontWeight: 700,
-              px: 4,
-              "&:hover": { bgcolor: "#e6c200" },
-            }}
-            onClick={() => navigate("/shop")}
-          >
-            Shop Now
-          </Button>
-          <Button
-            variant="outlined"
-            size="large"
-            sx={{ color: "white", borderColor: "white", px: 4 }}
-            onClick={() => navigate("/sign-up")}
-          >
-            Join Us
-          </Button>
-        </Stack>
-      </Box>
-
-      {/* ── Features ── */}
-      <Container sx={{ py: 6 }}>
-        <Grid container spacing={4} justifyContent="center">
-          {FEATURES.map((f) => (
-            <Grid item xs={12} sm={4} key={f.title}>
-              <Box textAlign="center">
-                {f.icon}
-                <Typography variant="h6" fontWeight={700} mt={1}>
-                  {f.title}
-                </Typography>
-                <Typography variant="body2" color="text.secondary">
-                  {f.desc}
-                </Typography>
-              </Box>
-            </Grid>
-          ))}
-        </Grid>
-      </Container>
-
-      {/* ── Jersey Cards ── */}
-      <Box sx={{ bgcolor: "#f5f5f5", py: 6 }}>
-        <Container>
-          <Typography
-            variant="h4"
-            fontWeight={700}
-            textAlign="center"
-            gutterBottom
-          >
-            Featured Jerseys
-          </Typography>
-          <Typography
-            variant="body1"
-            textAlign="center"
-            color="text.secondary"
-            mb={4}
-          >
-            Representing all 48 nations of FIFA World Cup 2026
-          </Typography>
-          <Grid container spacing={3}>
-            {JERSEYS.map((j) => (
-              <Grid item xs={12} sm={6} md={4} key={j.id}>
-                <Card
+        <Container maxWidth="lg">
+          <Grid container spacing={4} alignItems="center">
+            <Grid size={{ xs: 12, md: 6 }}>
+              <Typography
+                variant="overline"
+                sx={{
+                  color: "#FFD700",
+                  fontWeight: 700,
+                  letterSpacing: 2,
+                  mb: 1,
+                  display: "block",
+                }}
+              >
+                FIFA World Cup 2026
+              </Typography>
+              <Typography
+                variant="h3"
+                fontWeight={900}
+                sx={{
+                  fontSize: { xs: "2rem", md: "2.8rem" },
+                  lineHeight: 1.2,
+                  mb: 2,
+                }}
+              >
+                Design Your Own{" "}
+                <Box component="span" sx={{ color: "#FFD700" }}>
+                  Jersey
+                </Box>
+              </Typography>
+              <Typography
+                variant="h6"
+                sx={{
+                  color: "rgba(255,255,255,0.8)",
+                  fontWeight: 400,
+                  mb: 1,
+                  fontSize: { xs: "1rem", md: "1.15rem" },
+                }}
+              >
+                Add your custom name &amp; number to any jersey.
+              </Typography>
+              <Typography
+                variant="body1"
+                sx={{
+                  color: "rgba(255,255,255,0.6)",
+                  mb: 3,
+                  fontSize: { xs: 14, md: 15 },
+                }}
+              >
+                Custom printing for just{" "}
+                <strong style={{ color: "#FFD700" }}>Rs. 200</strong> — make it
+                truly yours.
+              </Typography>
+              <Stack direction="row" spacing={2}>
+                <Button
+                  variant="contained"
+                  size="large"
+                  endIcon={<ArrowForwardIcon />}
+                  onClick={() => navigate("/shop")}
                   sx={{
-                    borderRadius: 3,
-                    boxShadow: 3,
-                    "&:hover": {
-                      boxShadow: 6,
-                      transform: "translateY(-4px)",
-                      transition: "all 0.2s",
-                    },
+                    bgcolor: "#FFD700",
+                    color: "#0a1929",
+                    fontWeight: 700,
+                    textTransform: "none",
+                    px: 4,
+                    "&:hover": { bgcolor: "#e6c200" },
                   }}
                 >
-                  <CardMedia
+                  Shop Now
+                </Button>
+              </Stack>
+            </Grid>
+
+            {/* Hero Jersey Preview */}
+            <Grid
+              size={{ xs: 12, md: 6 }}
+              sx={{ display: "flex", justifyContent: "center" }}
+            >
+              <JerseyCustomizer
+                primaryColor="#DC143C"
+                secondaryColor="#003893"
+                playerName="YOUR NAME"
+                playerNumber={10}
+                width={300}
+                height={360}
+                variant="hero"
+                autoFlip
+              />
+            </Grid>
+          </Grid>
+        </Container>
+      </Box>
+
+      {/* ── How It Works ── */}
+      <Box sx={{ bgcolor: "#f5f8fc", py: 5 }}>
+        <Container maxWidth="lg">
+          <Typography
+            variant="h5"
+            fontWeight={800}
+            textAlign="center"
+            mb={4}
+            sx={{ color: "#0a1929" }}
+          >
+            How It Works
+          </Typography>
+          <Grid container spacing={3} justifyContent="center">
+            {STEPS.map((step, idx) => (
+              <Grid size={{ xs: 12, sm: 4 }} key={idx}>
+                <Box
+                  sx={{
+                    textAlign: "center",
+                    p: 3,
+                    bgcolor: "white",
+                    borderRadius: 3,
+                    boxShadow: "0 2px 8px rgba(0,0,0,0.06)",
+                    height: "100%",
+                  }}
+                >
+                  <Box
                     sx={{
-                      height: 200,
-                      background: `linear-gradient(135deg, ${j.bg} 50%, ${j.color} 50%)`,
+                      width: 72,
+                      height: 72,
+                      borderRadius: "50%",
+                      bgcolor: "rgba(21,101,192,0.08)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
+                      mx: "auto",
+                      mb: 2,
                     }}
                   >
-                    <SportsSoccerIcon
-                      sx={{ fontSize: 80, color: "rgba(255,255,255,0.4)" }}
-                    />
-                  </CardMedia>
-                  <CardContent>
-                    <Typography variant="h6" fontWeight={700}>
-                      {j.team}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {j.league}
-                    </Typography>
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        mt: 2,
-                      }}
-                    >
-                      <Typography variant="h6" color="primary" fontWeight={700}>
-                        {j.price}
-                      </Typography>
-                      <Button
-                        variant="contained"
-                        size="small"
-                        onClick={() => handleAddToCart(j)}
-                      >
-                        Add to Cart
-                      </Button>
-                    </Box>
-                  </CardContent>
-                </Card>
+                    {step.icon}
+                  </Box>
+                  <Typography variant="subtitle1" fontWeight={700} gutterBottom>
+                    {step.title}
+                  </Typography>
+                  <Typography variant="body2" color="text.secondary">
+                    {step.desc}
+                  </Typography>
+                </Box>
               </Grid>
             ))}
           </Grid>
         </Container>
       </Box>
 
-      {/* ── Footer ── */}
-      <Box sx={{ bgcolor: "#0a1929", py: 4, textAlign: "center" }}>
-        <Typography color="grey.500" variant="body2">
-          © 2026 Jersey Pasal — Your #1 source for FIFA World Cup 2026 Jerseys
-          in Nepal
+      {/* ── Product Grid ── */}
+      <Container maxWidth="lg" sx={{ py: 4 }}>
+        <Typography variant="h5" sx={{ fontWeight: 700, color: "#333", mb: 2 }}>
+          For You
         </Typography>
-      </Box>
+
+        <Grid container spacing={1.5}>
+          {isLoading
+            ? Array.from({ length: 12 }).map((_, i) => (
+                <Grid size={{ xs: 6, sm: 4, md: 3 }} key={i}>
+                  <ProductCardSkeleton />
+                </Grid>
+              ))
+            : products.map((product) => (
+                <Grid size={{ xs: 6, sm: 4, md: 3 }} key={product._id}>
+                  <ProductCard product={product} />
+                </Grid>
+              ))}
+        </Grid>
+
+        {!isLoading && products.length === 0 && (
+          <Box sx={{ textAlign: "center", py: 8 }}>
+            <SportsSoccerIcon sx={{ fontSize: 64, color: "#ddd", mb: 1 }} />
+            <Typography sx={{ color: "#999", fontSize: 15 }}>
+              No jerseys available yet. Check back soon!
+            </Typography>
+          </Box>
+        )}
+      </Container>
     </Box>
   );
 };

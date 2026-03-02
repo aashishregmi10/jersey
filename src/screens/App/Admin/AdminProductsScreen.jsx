@@ -65,7 +65,9 @@ const AdminProductsScreen = () => {
     }
   };
 
-  useEffect(() => { fetchProducts(); }, []);
+  useEffect(() => {
+    fetchProducts();
+  }, []);
 
   const handleOpen = (product = null) => {
     if (product) {
@@ -142,24 +144,62 @@ const AdminProductsScreen = () => {
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#f5f6fa" }}>
       {/* ── Navbar ── */}
-      <Box sx={{ bgcolor: "#0a1929", px: { xs: 2, md: 4 }, py: 1.5, display: "flex", alignItems: "center", gap: 1 }}>
+      <Box
+        sx={{
+          bgcolor: "#0a1929",
+          px: { xs: 2, md: 4 },
+          py: 1.5,
+          display: "flex",
+          alignItems: "center",
+          gap: 1,
+        }}
+      >
         <SportsSoccerIcon sx={{ color: "#FFD700" }} />
-        <Typography variant="h6" fontWeight={700} color="white" sx={{ cursor: "pointer" }} onClick={() => navigate("/")}>
+        <Typography
+          variant="h6"
+          fontWeight={700}
+          color="white"
+          sx={{ cursor: "pointer" }}
+          onClick={() => navigate("/")}
+        >
           Jersey Pasal
         </Typography>
-        <Typography color="grey.400" sx={{ ml: 1 }}>/ Admin / Products</Typography>
+        <Typography color="grey.400" sx={{ ml: 1 }}>
+          / Admin / Products
+        </Typography>
       </Box>
 
       <Container sx={{ py: 4 }}>
         {/* Admin Nav */}
         <Stack direction="row" spacing={2} mb={4} flexWrap="wrap">
-          <Button variant="outlined" onClick={() => navigate("/app/admin")}>Dashboard</Button>
-          <Button variant="contained" onClick={() => navigate("/app/admin/products")}>Products</Button>
-          <Button variant="outlined" onClick={() => navigate("/app/admin/orders")}>Orders</Button>
+          <Button variant="outlined" onClick={() => navigate("/app/admin")}>
+            Dashboard
+          </Button>
+          <Button
+            variant="contained"
+            onClick={() => navigate("/app/admin/products")}
+          >
+            Products
+          </Button>
+          <Button
+            variant="outlined"
+            onClick={() => navigate("/app/admin/orders")}
+          >
+            Orders
+          </Button>
         </Stack>
 
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3 }}>
-          <Typography variant="h4" fontWeight={700}>Products</Typography>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 3,
+          }}
+        >
+          <Typography variant="h4" fontWeight={700}>
+            Products
+          </Typography>
           <Button
             variant="contained"
             startIcon={<AddIcon />}
@@ -178,25 +218,55 @@ const AdminProductsScreen = () => {
             {products.map((product) => (
               <Grid item xs={12} sm={6} md={4} key={product._id}>
                 <Paper sx={{ borderRadius: 3, p: 2, boxShadow: 1 }}>
-                  <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                  <Box
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      alignItems: "flex-start",
+                    }}
+                  >
                     <Box sx={{ flex: 1, minWidth: 0 }}>
-                      <Typography fontWeight={700} noWrap>{product.name}</Typography>
-                      <Typography variant="body2" color="text.secondary">{product.team}</Typography>
-                      <Chip label={product.league} size="small" sx={{ mt: 0.5, mb: 1, fontSize: 10 }} />
+                      <Typography fontWeight={700} noWrap>
+                        {product.name}
+                      </Typography>
+                      <Typography variant="body2" color="text.secondary">
+                        {product.team}
+                      </Typography>
+                      <Chip
+                        label={product.league}
+                        size="small"
+                        sx={{ mt: 0.5, mb: 1, fontSize: 10 }}
+                      />
                     </Box>
                     <Stack direction="row">
-                      <IconButton size="small" onClick={() => handleOpen(product)}>
+                      <IconButton
+                        size="small"
+                        onClick={() => handleOpen(product)}
+                      >
                         <EditIcon fontSize="small" />
                       </IconButton>
-                      <IconButton size="small" color="error" onClick={() => handleDelete(product._id)}>
+                      <IconButton
+                        size="small"
+                        color="error"
+                        onClick={() => handleDelete(product._id)}
+                      >
                         <DeleteIcon fontSize="small" />
                       </IconButton>
                     </Stack>
                   </Box>
                   <Divider sx={{ my: 1 }} />
-                  <Box sx={{ display: "flex", justifyContent: "space-between" }}>
-                    <Typography variant="body2" color="primary" fontWeight={700}>
-                      Rs. {(product.discountPrice ?? product.price).toLocaleString()}
+                  <Box
+                    sx={{ display: "flex", justifyContent: "space-between" }}
+                  >
+                    <Typography
+                      variant="body2"
+                      color="primary"
+                      fontWeight={700}
+                    >
+                      Rs.{" "}
+                      {(
+                        product.discountPrice ?? product.price
+                      ).toLocaleString()}
                     </Typography>
                     <Typography variant="body2" color="text.secondary">
                       Stock: {product.stock}
@@ -204,7 +274,12 @@ const AdminProductsScreen = () => {
                   </Box>
                   <Box sx={{ mt: 0.5 }}>
                     {product.sizes?.map((s) => (
-                      <Chip key={s} label={s} size="small" sx={{ mr: 0.5, mt: 0.5 }} />
+                      <Chip
+                        key={s}
+                        label={s}
+                        size="small"
+                        sx={{ mr: 0.5, mt: 0.5 }}
+                      />
                     ))}
                   </Box>
                 </Paper>
@@ -220,35 +295,92 @@ const AdminProductsScreen = () => {
         <DialogContent>
           <Grid container spacing={2} sx={{ mt: 0.5 }}>
             <Grid item xs={12} sm={6}>
-              <TextField fullWidth label="Name" name="name" value={form.name} onChange={handleChange} required />
+              <TextField
+                fullWidth
+                label="Name"
+                name="name"
+                value={form.name}
+                onChange={handleChange}
+                required
+              />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField fullWidth label="Team" name="team" value={form.team} onChange={handleChange} required />
+              <TextField
+                fullWidth
+                label="Team"
+                name="team"
+                value={form.team}
+                onChange={handleChange}
+                required
+              />
             </Grid>
             <Grid item xs={12}>
-              <TextField fullWidth label="League" name="league" value={form.league} onChange={handleChange} />
+              <TextField
+                fullWidth
+                label="League"
+                name="league"
+                value={form.league}
+                onChange={handleChange}
+                disabled
+                helperText="Fixed to FIFA World Cup 2026"
+              />
             </Grid>
             <Grid item xs={12}>
-              <TextField fullWidth label="Description" name="description" value={form.description} onChange={handleChange} multiline rows={2} />
+              <TextField
+                fullWidth
+                label="Description"
+                name="description"
+                value={form.description}
+                onChange={handleChange}
+                multiline
+                rows={2}
+              />
             </Grid>
             <Grid item xs={6}>
-              <TextField fullWidth label="Price (Rs.)" name="price" type="number" value={form.price} onChange={handleChange} required />
+              <TextField
+                fullWidth
+                label="Price (Rs.)"
+                name="price"
+                type="number"
+                value={form.price}
+                onChange={handleChange}
+                required
+              />
             </Grid>
             <Grid item xs={6}>
-              <TextField fullWidth label="Discount Price" name="discountPrice" type="number" value={form.discountPrice} onChange={handleChange} />
+              <TextField
+                fullWidth
+                label="Discount Price"
+                name="discountPrice"
+                type="number"
+                value={form.discountPrice}
+                onChange={handleChange}
+              />
             </Grid>
             <Grid item xs={12} sm={6}>
-              <TextField fullWidth label="Stock" name="stock" type="number" value={form.stock} onChange={handleChange} required />
+              <TextField
+                fullWidth
+                label="Stock"
+                name="stock"
+                type="number"
+                value={form.stock}
+                onChange={handleChange}
+                required
+              />
             </Grid>
             <Grid item xs={12}>
-              <Typography variant="subtitle2" fontWeight={700} mb={1}>Sizes</Typography>
+              <Typography variant="subtitle2" fontWeight={700} mb={1}>
+                Sizes
+              </Typography>
               <ToggleButtonGroup
                 value={form.sizes}
                 onChange={(_, v) => setForm((p) => ({ ...p, sizes: v }))}
                 size="small"
               >
                 {ALL_SIZES.map((s) => (
-                  <ToggleButton key={s} value={s}>{s}</ToggleButton>
+                  <ToggleButton key={s} value={s}>
+                    {s}
+                  </ToggleButton>
                 ))}
               </ToggleButtonGroup>
             </Grid>

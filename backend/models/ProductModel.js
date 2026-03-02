@@ -24,6 +24,8 @@ const productSchema = new mongoose.Schema(
     },
     league: { type: String, default: "FIFA World Cup 2026" },
     description: { type: String, default: "" },
+    primaryColor: { type: String, default: "#1565c0" },
+    secondaryColor: { type: String, default: "#FFFFFF" },
     price: { type: Number, required: [true, "Price is required"], min: 0 },
     discountPrice: { type: Number, default: null },
     images: [

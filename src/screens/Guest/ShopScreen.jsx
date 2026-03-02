@@ -1,343 +1,143 @@
-import { useEffect, useState, useCallback } from "react";
+import { useState } from "react";
 import {
   Box,
-  Button,
-  Card,
-  CardContent,
-  CardMedia,
-  Chip,
-  CircularProgress,
   Container,
-  FormControl,
   Grid,
-  IconButton,
   InputAdornment,
-  InputLabel,
   MenuItem,
   Pagination,
   Select,
-  Stack,
   TextField,
   Typography,
-  Badge,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
-import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
-import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
-import { useNavigate } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
-import { toast } from "react-toastify";
-import axios from "axios";
-import { addItem, selectCartCount } from "store/cartSlice";
+import { useGetProductsQuery } from "store/productApi";
+import ProductCard from "components/ProductCard";
+import ProductCardSkeleton from "components/ProductCardSkeleton";
 
-const API = import.meta.env.VITE_API_URL;
-
-const LEAGUES = [
-  "All",
-  "FIFA World Cup 2026",
-  "Premier League",
-  "La Liga",
-  "Serie A",
-  "Bundesliga",
-  "Ligue 1",
+const SORT_OPTIONS = [
+  { value: "newest", label: "Newest" },
+  { value: "price-low", label: "Price: Low to High" },
+  { value: "price-high", label: "Price: High to Low" },
+  { value: "top-rated", label: "Top Rated" },
 ];
 
 const ShopScreen = () => {
-  const navigate = useNavigate();
-  const dispatch = useDispatch();
-  const cartCount = useSelector(selectCartCount);
-
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [search, setSearch] = useState("");
-  const [searchInput, setSearchInput] = useState("");
-  const [league, setLeague] = useState("All");
   const [page, setPage] = useState(1);
-  const [totalPages, setTotalPages] = useState(1);
+  const [search, setSearch] = useState("");
+  const [sort, setSort] = useState("newest");
 
-  const fetchProducts = useCallback(async () => {
-    setLoading(true);
-    try {
-      const params = new URLSearchParams({ page, limit: 12 });
-      if (search) params.set("search", search);
-      if (league !== "All") params.set("league", league);
+  const { data, isLoading } = useGetProductsQuery({
+    page,
+    limit: 12,
+    search: search || undefined,
+  });
 
-      const { data } = await axios.get(`${API}/products?${params}`);
-      setProducts(data.products);
-      setTotalPages(data.totalPages);
-    } catch {
-      toast.error("Failed to load products");
-    } finally {
-      setLoading(false);
-    }
-  }, [search, league, page]);
+  const products = data?.products ?? [];
+  const totalPages = data?.totalPages ?? 1;
 
-  useEffect(() => {
-    fetchProducts();
-  }, [fetchProducts]);
-
-  const handleSearch = (e) => {
-    e.preventDefault();
-    setSearch(searchInput);
-    setPage(1);
-  };
-
-  const handleAddToCart = (product) => {
-    const defaultSize = product.sizes?.[0] ?? "M";
-    dispatch(addItem({ ...product, size: defaultSize }));
-    toast.success(`${product.name} added to cart!`, { autoClose: 1500 });
-  };
+  // Client-side sort (backend returns by createdAt desc)
+  const sorted = [...products].sort((a, b) => {
+    const priceA = a.discountPrice ?? a.price;
+    const priceB = b.discountPrice ?? b.price;
+    if (sort === "price-low") return priceA - priceB;
+    if (sort === "price-high") return priceB - priceA;
+    if (sort === "top-rated") return b.rating - a.rating;
+    return 0; // newest — already sorted
+  });
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "#f5f6fa" }}>
-      {/* ── Navbar ── */}
-      <Box
-        sx={{
-          bgcolor: "#0a1929",
-          px: { xs: 2, md: 4 },
-          py: 1.5,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          position: "sticky",
-          top: 0,
-          zIndex: 100,
-        }}
-      >
-        <Box
-          sx={{ display: "flex", alignItems: "center", gap: 1, cursor: "pointer" }}
-          onClick={() => navigate("/")}
-        >
-          <SportsSoccerIcon sx={{ color: "#FFD700" }} />
-          <Typography variant="h6" fontWeight={700} color="white">
-            Jersey Pasal
-          </Typography>
-        </Box>
-        <Stack direction="row" spacing={1} alignItems="center">
-          <IconButton
-            sx={{ color: "white" }}
-            onClick={() => navigate("/cart")}
-          >
-            <Badge badgeContent={cartCount} color="error">
-              <ShoppingCartIcon />
-            </Badge>
-          </IconButton>
-          <Button
-            variant="outlined"
-            size="small"
-            sx={{ color: "white", borderColor: "white" }}
-            onClick={() => navigate("/sign-in")}
-          >
-            Sign In
-          </Button>
-        </Stack>
-      </Box>
-
-      <Container sx={{ py: 4 }}>
-        {/* ── Page Title ── */}
-        <Typography variant="h4" fontWeight={700} gutterBottom>
-          Jersey Shop
-        </Typography>
-        <Typography variant="body1" color="text.secondary" mb={3}>
-          Browse our collection of official jerseys
+    <Box sx={{ bgcolor: "#ffffff", minHeight: "80vh" }}>
+      <Container maxWidth="lg" sx={{ py: 3 }}>
+        {/* Header */}
+        <Typography variant="h5" sx={{ fontWeight: 700, color: "#333", mb: 2 }}>
+          FIFA World Cup 2026 Jerseys
         </Typography>
 
-        {/* ── Filters ── */}
+        {/* Search + Sort bar */}
         <Box
-          component="form"
-          onSubmit={handleSearch}
           sx={{
             display: "flex",
-            flexWrap: "wrap",
-            gap: 2,
-            mb: 4,
-            alignItems: "center",
+            gap: 1.5,
+            mb: 2.5,
+            flexDirection: { xs: "column", sm: "row" },
           }}
         >
           <TextField
             size="small"
-            placeholder="Search team or jersey…"
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            InputProps={{
-              startAdornment: (
-                <InputAdornment position="start">
-                  <SearchIcon fontSize="small" />
-                </InputAdornment>
-              ),
+            placeholder="Search jerseys..."
+            value={search}
+            onChange={(e) => {
+              setSearch(e.target.value);
+              setPage(1);
             }}
-            sx={{ flex: "1 1 220px", bgcolor: "white", borderRadius: 1 }}
+            slotProps={{
+              input: {
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon sx={{ fontSize: 20, color: "#999" }} />
+                  </InputAdornment>
+                ),
+              },
+            }}
+            sx={{
+              flex: 1,
+              bgcolor: "white",
+              borderRadius: 1,
+              "& .MuiOutlinedInput-root": {
+                borderRadius: 1,
+              },
+            }}
           />
-          <FormControl size="small" sx={{ minWidth: 180, bgcolor: "white" }}>
-            <InputLabel>League</InputLabel>
-            <Select
-              value={league}
-              label="League"
-              onChange={(e) => { setLeague(e.target.value); setPage(1); }}
-            >
-              {LEAGUES.map((l) => (
-                <MenuItem key={l} value={l}>
-                  {l}
-                </MenuItem>
-              ))}
-            </Select>
-          </FormControl>
-          <Button type="submit" variant="contained" sx={{ height: 40 }}>
-            Search
-          </Button>
-          {(search || league !== "All") && (
-            <Button
-              variant="text"
-              color="secondary"
-              onClick={() => {
-                setSearch("");
-                setSearchInput("");
-                setLeague("All");
-                setPage(1);
-              }}
-            >
-              Clear
-            </Button>
-          )}
+          <Select
+            size="small"
+            value={sort}
+            onChange={(e) => setSort(e.target.value)}
+            sx={{ minWidth: 180, bgcolor: "white", borderRadius: 1 }}
+          >
+            {SORT_OPTIONS.map((o) => (
+              <MenuItem key={o.value} value={o.value}>
+                {o.label}
+              </MenuItem>
+            ))}
+          </Select>
         </Box>
 
-        {/* ── Products Grid ── */}
-        {loading ? (
-          <Box sx={{ display: "flex", justifyContent: "center", py: 10 }}>
-            <CircularProgress />
-          </Box>
-        ) : products.length === 0 ? (
-          <Box sx={{ textAlign: "center", py: 10 }}>
-            <SportsSoccerIcon sx={{ fontSize: 64, color: "#ccc" }} />
-            <Typography variant="h6" color="text.secondary" mt={2}>
-              No jerseys found
+        {/* Product grid */}
+        <Grid container spacing={1.5}>
+          {isLoading
+            ? Array.from({ length: 12 }).map((_, i) => (
+                <Grid size={{ xs: 6, sm: 4, md: 3 }} key={i}>
+                  <ProductCardSkeleton />
+                </Grid>
+              ))
+            : sorted.map((product) => (
+                <Grid size={{ xs: 6, sm: 4, md: 3 }} key={product._id}>
+                  <ProductCard product={product} />
+                </Grid>
+              ))}
+        </Grid>
+
+        {/* Empty state */}
+        {!isLoading && products.length === 0 && (
+          <Box sx={{ textAlign: "center", py: 8 }}>
+            <SportsSoccerIcon sx={{ fontSize: 64, color: "#ddd", mb: 1 }} />
+            <Typography sx={{ color: "#999", fontSize: 15 }}>
+              No jerseys found. Try a different search.
             </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Try a different search or filter
-            </Typography>
           </Box>
-        ) : (
-          <Grid container spacing={3}>
-            {products.map((product) => (
-              <Grid item xs={12} sm={6} md={4} lg={3} key={product._id}>
-                <Card
-                  sx={{
-                    borderRadius: 3,
-                    boxShadow: 2,
-                    transition: "all 0.2s",
-                    "&:hover": { boxShadow: 6, transform: "translateY(-4px)" },
-                    display: "flex",
-                    flexDirection: "column",
-                  }}
-                >
-                  <CardMedia
-                    sx={{
-                      height: 200,
-                      cursor: "pointer",
-                      background:
-                        product.images?.[0]?.url
-                          ? undefined
-                          : "linear-gradient(135deg, #0a1929 50%, #1565c0 50%)",
-                      bgcolor: product.images?.[0]?.url ? undefined : "transparent",
-                      display: "flex",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                    image={product.images?.[0]?.url}
-                    onClick={() => navigate(`/product/${product._id}`)}
-                  >
-                    {!product.images?.[0]?.url && (
-                      <SportsSoccerIcon
-                        sx={{ fontSize: 80, color: "rgba(255,255,255,0.4)" }}
-                      />
-                    )}
-                  </CardMedia>
-                  <CardContent sx={{ flexGrow: 1 }}>
-                    <Typography
-                      variant="subtitle1"
-                      fontWeight={700}
-                      sx={{ cursor: "pointer" }}
-                      onClick={() => navigate(`/product/${product._id}`)}
-                    >
-                      {product.name}
-                    </Typography>
-                    <Typography variant="body2" color="text.secondary">
-                      {product.team}
-                    </Typography>
-                    <Chip
-                      label={product.league}
-                      size="small"
-                      sx={{ mt: 0.5, mb: 1, fontSize: 10 }}
-                    />
-                    <Box
-                      sx={{
-                        display: "flex",
-                        justifyContent: "space-between",
-                        alignItems: "center",
-                        mt: 1,
-                      }}
-                    >
-                      <Box>
-                        {product.discountPrice ? (
-                          <>
-                            <Typography
-                              variant="body2"
-                              color="text.secondary"
-                              sx={{ textDecoration: "line-through" }}
-                            >
-                              Rs. {product.price.toLocaleString()}
-                            </Typography>
-                            <Typography
-                              variant="h6"
-                              color="error"
-                              fontWeight={700}
-                            >
-                              Rs. {product.discountPrice.toLocaleString()}
-                            </Typography>
-                          </>
-                        ) : (
-                          <Typography
-                            variant="h6"
-                            color="primary"
-                            fontWeight={700}
-                          >
-                            Rs. {product.price.toLocaleString()}
-                          </Typography>
-                        )}
-                      </Box>
-                      <IconButton
-                        color="primary"
-                        onClick={() => handleAddToCart(product)}
-                        disabled={product.stock === 0}
-                        title="Add to cart"
-                      >
-                        <AddShoppingCartIcon />
-                      </IconButton>
-                    </Box>
-                    {product.stock === 0 && (
-                      <Chip
-                        label="Out of Stock"
-                        color="error"
-                        size="small"
-                        sx={{ mt: 1 }}
-                      />
-                    )}
-                  </CardContent>
-                </Card>
-              </Grid>
-            ))}
-          </Grid>
         )}
 
-        {/* ── Pagination ── */}
+        {/* Pagination */}
         {totalPages > 1 && (
-          <Box sx={{ display: "flex", justifyContent: "center", mt: 5 }}>
+          <Box sx={{ display: "flex", justifyContent: "center", mt: 4 }}>
             <Pagination
               count={totalPages}
               page={page}
-              onChange={(_, val) => setPage(val)}
+              onChange={(_, v) => setPage(v)}
               color="primary"
+              shape="rounded"
             />
           </Box>
         )}

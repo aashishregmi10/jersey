@@ -11,6 +11,9 @@ const orderItemSchema = new mongoose.Schema({
   price: { type: Number, required: true },
   size: { type: String, required: true },
   quantity: { type: Number, required: true, min: 1 },
+  playerName: { type: String, default: "" },
+  playerNumber: { type: Number, default: null },
+  customizationPrice: { type: Number, default: 0 },
 });
 
 const shippingAddressSchema = new mongoose.Schema({

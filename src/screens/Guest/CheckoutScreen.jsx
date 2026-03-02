@@ -14,7 +14,6 @@ import {
   Typography,
   CircularProgress,
 } from "@mui/material";
-import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
 import LockIcon from "@mui/icons-material/Lock";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 import { useNavigate } from "react-router-dom";
@@ -75,13 +74,15 @@ const CheckoutScreen = () => {
         price: i.price,
         size: i.size,
         qty: i.qty,
-        image: i.image,
+        playerName: i.playerName || "",
+        playerNumber: i.playerNumber ?? null,
+        customizationPrice: i.customizationPrice ?? 0,
       }));
 
       const { data } = await axios.post(
         `${API}/orders`,
         {
-          orderItems,
+          items: orderItems,
           shippingAddress: form,
           paymentMethod,
           totalPrice: total,
@@ -99,33 +100,7 @@ const CheckoutScreen = () => {
   };
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "#f5f6fa" }}>
-      {/* ── Navbar ── */}
-      <Box
-        sx={{
-          bgcolor: "#0a1929",
-          px: { xs: 2, md: 4 },
-          py: 1.5,
-          display: "flex",
-          alignItems: "center",
-          gap: 1,
-        }}
-      >
-        <SportsSoccerIcon sx={{ color: "#FFD700" }} />
-        <Typography
-          variant="h6"
-          fontWeight={700}
-          color="white"
-          sx={{ cursor: "pointer" }}
-          onClick={() => navigate("/")}
-        >
-          Jersey Pasal
-        </Typography>
-        <Typography color="grey.500" sx={{ ml: 1 }}>
-          / Checkout
-        </Typography>
-      </Box>
-
+    <Box sx={{ minHeight: "100vh", bgcolor: "#ffffff" }}>
       <Container sx={{ py: 4 }}>
         <Button
           startIcon={<ArrowBackIcon />}
@@ -269,26 +244,58 @@ const CheckoutScreen = () => {
               <Stack spacing={1} mb={2}>
                 {items.map((item) => (
                   <Box
-                    key={`${item._id}-${item.size}`}
+                    key={`${item._id}-${item.size}-${item.playerName || ""}-${item.playerNumber ?? ""}`}
                     sx={{ display: "flex", justifyContent: "space-between" }}
                   >
-                    <Typography variant="body2" sx={{ flex: 1, mr: 1 }} noWrap>
-                      {item.name} ({item.size}) × {item.qty}
-                    </Typography>
+                    <Box sx={{ flex: 1, mr: 1 }}>
+                      <Typography variant="body2" noWrap>
+                        {item.name} ({item.size}) × {item.qty}
+                      </Typography>
+                      {(item.playerName || item.playerNumber) && (
+                        <Typography variant="caption" sx={{ color: "#1565c0" }}>
+                          🖨️ {item.playerName}
+                          {item.playerNumber && ` #${item.playerNumber}`}
+                          {" · +Rs. "}
+                          {(item.customizationPrice ?? 0).toLocaleString()}
+                        </Typography>
+                      )}
+                    </Box>
                     <Typography variant="body2" fontWeight={600}>
-                      Rs. {(item.price * item.qty).toLocaleString()}
+                      Rs.{" "}
+                      {(
+                        (item.price + (item.customizationPrice ?? 0)) *
+                        item.qty
+                      ).toLocaleString()}
                     </Typography>
                   </Box>
                 ))}
               </Stack>
 
               <Divider sx={{ mb: 1.5 }} />
-              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
-                <Typography variant="body2" color="text.secondary">Shipping</Typography>
-                <Typography variant="body2" color="success.main" fontWeight={600}>Free</Typography>
+              <Box
+                sx={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  mb: 0.5,
+                }}
+              >
+                <Typography variant="body2" color="text.secondary">
+                  Shipping
+                </Typography>
+                <Typography
+                  variant="body2"
+                  color="success.main"
+                  fontWeight={600}
+                >
+                  Free
+                </Typography>
               </Box>
-              <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-                <Typography variant="h6" fontWeight={700}>Total</Typography>
+              <Box
+                sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}
+              >
+                <Typography variant="h6" fontWeight={700}>
+                  Total
+                </Typography>
                 <Typography variant="h6" fontWeight={700} color="primary">
                   Rs. {total.toLocaleString()}
                 </Typography>
@@ -299,7 +306,13 @@ const CheckoutScreen = () => {
                 variant="contained"
                 size="large"
                 fullWidth
-                startIcon={loading ? <CircularProgress size={18} color="inherit" /> : <LockIcon />}
+                startIcon={
+                  loading ? (
+                    <CircularProgress size={18} color="inherit" />
+                  ) : (
+                    <LockIcon />
+                  )
+                }
                 disabled={loading}
                 sx={{ bgcolor: "#2e7d32", "&:hover": { bgcolor: "#1b5e20" } }}
               >

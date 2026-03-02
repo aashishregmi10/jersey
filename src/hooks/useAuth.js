@@ -3,7 +3,7 @@ import { logout } from "store/authSlice";
 
 const useAuth = () => {
   const dispatch = useDispatch();
-  const { user, token, loading, error } = useSelector((state) => state.auth);
+  const { user, token } = useSelector((state) => state.auth);
 
   const isAuthenticated = !!token;
   const isAdmin = user?.role === "admin";
@@ -14,8 +14,6 @@ const useAuth = () => {
   return {
     user,
     token,
-    loading,
-    error,
     isAuthenticated,
     isAdmin,
     isCustomer,

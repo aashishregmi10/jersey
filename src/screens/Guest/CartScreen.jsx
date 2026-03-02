@@ -1,6 +1,5 @@
 import {
   Avatar,
-  Badge,
   Box,
   Button,
   Container,
@@ -27,6 +26,8 @@ import {
   removeItem,
   clearCart,
 } from "store/cartSlice";
+import useAuth from "hooks/useAuth";
+import JerseySilhouette from "components/JerseySilhouette";
 
 const CartScreen = () => {
   const navigate = useNavigate();
@@ -34,42 +35,30 @@ const CartScreen = () => {
   const items = useSelector(selectCartItems);
   const totalCount = useSelector(selectCartCount);
   const total = useSelector(selectCartTotal);
+  const { isAuthenticated } = useAuth();
 
-  const handleQty = (_id, size, qty) => dispatch(updateQty({ _id, size, qty }));
-  const handleRemove = (_id, size) => dispatch(removeItem({ _id, size }));
+  const handleQty = (item, qty) =>
+    dispatch(
+      updateQty({
+        _id: item._id,
+        size: item.size,
+        playerName: item.playerName,
+        playerNumber: item.playerNumber,
+        qty,
+      }),
+    );
+  const handleRemove = (item) =>
+    dispatch(
+      removeItem({
+        _id: item._id,
+        size: item.size,
+        playerName: item.playerName,
+        playerNumber: item.playerNumber,
+      }),
+    );
 
   return (
-    <Box sx={{ minHeight: "100vh", bgcolor: "#f5f6fa" }}>
-      {/* ── Navbar ── */}
-      <Box
-        sx={{
-          bgcolor: "#0a1929",
-          px: { xs: 2, md: 4 },
-          py: 1.5,
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "space-between",
-          position: "sticky",
-          top: 0,
-          zIndex: 100,
-        }}
-      >
-        <Box
-          sx={{ display: "flex", alignItems: "center", gap: 1, cursor: "pointer" }}
-          onClick={() => navigate("/")}
-        >
-          <SportsSoccerIcon sx={{ color: "#FFD700" }} />
-          <Typography variant="h6" fontWeight={700} color="white">
-            Jersey Pasal
-          </Typography>
-        </Box>
-        <IconButton sx={{ color: "white" }}>
-          <Badge badgeContent={totalCount} color="error">
-            <ShoppingCartIcon />
-          </Badge>
-        </IconButton>
-      </Box>
-
+    <Box sx={{ minHeight: "80vh", bgcolor: "#ffffff" }}>
       <Container sx={{ py: 4 }}>
         <Button
           startIcon={<ArrowBackIcon />}
@@ -111,32 +100,33 @@ const CartScreen = () => {
             {/* ── Cart Items ── */}
             <Box sx={{ flex: "1 1 400px" }}>
               <Stack spacing={2}>
-                {items.map((item) => (
+                {items.map((item, idx) => (
                   <Paper
-                    key={`${item._id}-${item.size}`}
-                    sx={{ borderRadius: 3, p: 2, display: "flex", gap: 2, alignItems: "center" }}
+                    key={`${item._id}-${item.size}-${item.playerName || ""}-${item.playerNumber ?? ""}`}
+                    sx={{
+                      borderRadius: 3,
+                      p: 2,
+                      display: "flex",
+                      gap: 2,
+                      alignItems: "center",
+                    }}
                   >
                     {/* Image */}
-                    {item.image ? (
-                      <Box
-                        component="img"
-                        src={item.image}
-                        alt={item.name}
-                        sx={{ width: 80, height: 80, objectFit: "cover", borderRadius: 2 }}
+                    <Box
+                      sx={{
+                        width: 80,
+                        height: 80,
+                        borderRadius: 2,
+                        overflow: "hidden",
+                        bgcolor: "#f4f6f8",
+                        flexShrink: 0,
+                      }}
+                    >
+                      <JerseySilhouette
+                        primaryColor={item.primaryColor || "#1565c0"}
+                        secondaryColor={item.secondaryColor || "#FFFFFF"}
                       />
-                    ) : (
-                      <Avatar
-                        sx={{
-                          width: 80,
-                          height: 80,
-                          borderRadius: 2,
-                          bgcolor: "#0a1929",
-                        }}
-                        variant="rounded"
-                      >
-                        <SportsSoccerIcon sx={{ fontSize: 36 }} />
-                      </Avatar>
-                    )}
+                    </Box>
 
                     {/* Info */}
                     <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -146,8 +136,23 @@ const CartScreen = () => {
                       <Typography variant="body2" color="text.secondary">
                         {item.team} · Size: {item.size}
                       </Typography>
+                      {(item.playerName || item.playerNumber) && (
+                        <Typography
+                          variant="body2"
+                          sx={{ color: "#1565c0", mt: 0.3 }}
+                        >
+                          🖨️ {item.playerName && `Name: ${item.playerName}`}
+                          {item.playerName && item.playerNumber && " | "}
+                          {item.playerNumber && `#${item.playerNumber}`}
+                          {" · +Rs. "}
+                          {(item.customizationPrice ?? 0).toLocaleString()}
+                        </Typography>
+                      )}
                       <Typography variant="h6" color="primary" fontWeight={700}>
-                        Rs. {item.price.toLocaleString()}
+                        Rs.{" "}
+                        {(
+                          item.price + (item.customizationPrice ?? 0)
+                        ).toLocaleString()}
                       </Typography>
                     </Box>
 
@@ -155,7 +160,7 @@ const CartScreen = () => {
                     <Stack direction="row" alignItems="center" spacing={0.5}>
                       <IconButton
                         size="small"
-                        onClick={() => handleQty(item._id, item.size, item.qty - 1)}
+                        onClick={() => handleQty(item, item.qty - 1)}
                         disabled={item.qty <= 1}
                       >
                         <RemoveIcon fontSize="small" />
@@ -171,22 +176,29 @@ const CartScreen = () => {
                       </Typography>
                       <IconButton
                         size="small"
-                        onClick={() => handleQty(item._id, item.size, item.qty + 1)}
+                        onClick={() => handleQty(item, item.qty + 1)}
                       >
                         <AddIcon fontSize="small" />
                       </IconButton>
                     </Stack>
 
                     {/* Row total */}
-                    <Typography fontWeight={700} sx={{ minWidth: 90, textAlign: "right" }}>
-                      Rs. {(item.price * item.qty).toLocaleString()}
+                    <Typography
+                      fontWeight={700}
+                      sx={{ minWidth: 90, textAlign: "right" }}
+                    >
+                      Rs.{" "}
+                      {(
+                        (item.price + (item.customizationPrice ?? 0)) *
+                        item.qty
+                      ).toLocaleString()}
                     </Typography>
 
                     {/* Remove */}
                     <IconButton
                       color="error"
                       size="small"
-                      onClick={() => handleRemove(item._id, item.size)}
+                      onClick={() => handleRemove(item)}
                     >
                       <DeleteIcon fontSize="small" />
                     </IconButton>
@@ -215,38 +227,78 @@ const CartScreen = () => {
 
                 {items.map((item) => (
                   <Box
-                    key={`${item._id}-${item.size}`}
-                    sx={{ display: "flex", justifyContent: "space-between", mb: 1 }}
+                    key={`${item._id}-${item.size}-${item.playerName || ""}-${item.playerNumber ?? ""}`}
+                    sx={{
+                      display: "flex",
+                      justifyContent: "space-between",
+                      mb: 1,
+                    }}
                   >
-                    <Typography variant="body2" noWrap sx={{ flex: 1, mr: 1 }}>
-                      {item.name} × {item.qty}
-                    </Typography>
+                    <Box sx={{ flex: 1, mr: 1 }}>
+                      <Typography variant="body2" noWrap>
+                        {item.name} × {item.qty}
+                      </Typography>
+                      {(item.playerName || item.playerNumber) && (
+                        <Typography variant="caption" sx={{ color: "#1565c0" }}>
+                          🖨️ {item.playerName}
+                          {item.playerNumber && ` #${item.playerNumber}`}
+                        </Typography>
+                      )}
+                    </Box>
                     <Typography variant="body2" fontWeight={600}>
-                      Rs. {(item.price * item.qty).toLocaleString()}
+                      Rs.{" "}
+                      {(
+                        (item.price + (item.customizationPrice ?? 0)) *
+                        item.qty
+                      ).toLocaleString()}
                     </Typography>
                   </Box>
                 ))}
 
                 <Divider sx={{ my: 2 }} />
 
-                <Box sx={{ display: "flex", justifyContent: "space-between", mb: 0.5 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    mb: 0.5,
+                  }}
+                >
                   <Typography variant="body1">Subtotal</Typography>
                   <Typography variant="body1" fontWeight={700}>
                     Rs. {total.toLocaleString()}
                   </Typography>
                 </Box>
-                <Box sx={{ display: "flex", justifyContent: "space-between", mb: 2 }}>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    mb: 2,
+                  }}
+                >
                   <Typography variant="body2" color="text.secondary">
                     Shipping
                   </Typography>
-                  <Typography variant="body2" color="success.main" fontWeight={600}>
+                  <Typography
+                    variant="body2"
+                    color="success.main"
+                    fontWeight={600}
+                  >
                     Free
                   </Typography>
                 </Box>
 
                 <Divider sx={{ mb: 2 }} />
-                <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
-                  <Typography variant="h6" fontWeight={700}>Total</Typography>
+                <Box
+                  sx={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    mb: 3,
+                  }}
+                >
+                  <Typography variant="h6" fontWeight={700}>
+                    Total
+                  </Typography>
                   <Typography variant="h6" fontWeight={700} color="primary">
                     Rs. {total.toLocaleString()}
                   </Typography>
@@ -257,9 +309,13 @@ const CartScreen = () => {
                   size="large"
                   fullWidth
                   endIcon={<ArrowForwardIcon />}
-                  onClick={() => navigate("/checkout")}
+                  onClick={() =>
+                    navigate(isAuthenticated ? "/checkout" : "/sign-in")
+                  }
                 >
-                  Proceed to Checkout
+                  {isAuthenticated
+                    ? "Proceed to Checkout"
+                    : "Login to Checkout"}
                 </Button>
               </Paper>
             </Box>

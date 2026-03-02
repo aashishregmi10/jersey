@@ -5,23 +5,47 @@ import OrderModel from "../models/OrderModel.js";
 // @route   POST /api/orders
 // @access  Private
 export const placeOrder = asyncHandler(async (req, res) => {
-  const {
-    items,
-    shippingAddress,
-    paymentMethod,
-    subTotal,
-    shippingPrice,
-    totalPrice,
-  } = req.body;
+  const { items, shippingAddress, paymentMethod } = req.body;
 
   if (!items || items.length === 0) {
     res.status(400);
     throw new Error("No order items");
   }
 
+  // Map & validate each item, enforce customization price server-side
+  const mappedItems = items.map((i) => {
+    const playerName = (i.playerName || "").trim().substring(0, 12);
+    const playerNumber =
+      i.playerNumber != null && i.playerNumber >= 1 && i.playerNumber <= 99
+        ? Math.floor(Number(i.playerNumber))
+        : null;
+    const hasCustomization = !!(playerName || playerNumber);
+    const customizationPrice = hasCustomization ? 200 : 0;
+
+    return {
+      product: i.product,
+      name: i.name,
+      image: i.image,
+      price: Number(i.price),
+      size: i.size,
+      quantity: Number(i.qty ?? i.quantity ?? 1),
+      playerName,
+      playerNumber,
+      customizationPrice,
+    };
+  });
+
+  // Calculate total server-side (never trust client total)
+  const subTotal = mappedItems.reduce(
+    (sum, i) => sum + (i.price + i.customizationPrice) * i.quantity,
+    0,
+  );
+  const shippingPrice = 0; // free shipping
+  const totalPrice = subTotal + shippingPrice;
+
   const order = await OrderModel.create({
     user: req.user._id,
-    items,
+    items: mappedItems,
     shippingAddress,
     paymentMethod,
     subTotal,

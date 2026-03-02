@@ -2,6 +2,15 @@
   box-sizing: border-box;
 }
 
+/* Athletic block font for jersey printing preview */
+@font-face {
+  font-family: 'JerseyBlock';
+  src: local('Impact'), local('Arial Black'), local('Haettenschweiler');
+  font-weight: 900;
+  font-style: normal;
+  font-display: swap;
+}
+
 body {
   margin: 0;
   padding: 0;

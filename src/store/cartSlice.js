@@ -17,6 +17,13 @@ const saveCart = (items) => {
   }
 };
 
+// Helper: match cart items by composite key
+const isSameItem = (a, b) =>
+  a._id === b._id &&
+  a.size === b.size &&
+  (a.playerName || "") === (b.playerName || "") &&
+  (a.playerNumber ?? null) === (b.playerNumber ?? null);
+
 const cartSlice = createSlice({
   name: "cart",
   initialState: {
@@ -24,11 +31,23 @@ const cartSlice = createSlice({
   },
   reducers: {
     addItem: (state, action) => {
-      const { _id, size, name, price, discountPrice, images, team } =
-        action.payload;
-      const existing = state.items.find(
-        (i) => i._id === _id && i.size === size,
-      );
+      const {
+        _id,
+        size,
+        name,
+        price,
+        discountPrice,
+        team,
+        primaryColor,
+        secondaryColor,
+        playerName = "",
+        playerNumber = null,
+        customizationPrice = 0,
+      } = action.payload;
+
+      const incoming = { _id, size, playerName, playerNumber };
+      const existing = state.items.find((i) => isSameItem(i, incoming));
+
       if (existing) {
         existing.qty += 1;
       } else {
@@ -37,29 +56,27 @@ const cartSlice = createSlice({
           name,
           team,
           price: discountPrice ?? price,
-          image: images?.[0]?.url ?? null,
+          primaryColor: primaryColor || "#1565c0",
+          secondaryColor: secondaryColor || "#FFFFFF",
           size,
           qty: 1,
+          playerName,
+          playerNumber,
+          customizationPrice,
         });
       }
       saveCart(state.items);
     },
 
     removeItem: (state, action) => {
-      const { _id, size } = action.payload;
-      state.items = state.items.filter(
-        (i) => !(i._id === _id && i.size === size),
-      );
+      state.items = state.items.filter((i) => !isSameItem(i, action.payload));
       saveCart(state.items);
     },
 
     updateQty: (state, action) => {
-      const { _id, size, qty } = action.payload;
-      const item = state.items.find(
-        (i) => i._id === _id && i.size === size,
-      );
+      const item = state.items.find((i) => isSameItem(i, action.payload));
       if (item) {
-        item.qty = Math.max(1, qty);
+        item.qty = Math.max(1, action.payload.qty);
         saveCart(state.items);
       }
     },
@@ -78,6 +95,9 @@ export const selectCartItems = (state) => state.cart.items;
 export const selectCartCount = (state) =>
   state.cart.items.reduce((acc, i) => acc + i.qty, 0);
 export const selectCartTotal = (state) =>
-  state.cart.items.reduce((acc, i) => acc + i.price * i.qty, 0);
+  state.cart.items.reduce(
+    (acc, i) => acc + (i.price + (i.customizationPrice ?? 0)) * i.qty,
+    0,
+  );
 
 export default cartSlice.reducer;
