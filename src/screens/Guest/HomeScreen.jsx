@@ -8,23 +8,22 @@ import { useNavigate } from "react-router-dom";
 import { useGetProductsQuery } from "store/productApi";
 import ProductCard from "components/ProductCard";
 import ProductCardSkeleton from "components/ProductCardSkeleton";
-import JerseyCustomizer from "components/JerseyCustomizer";
 
 const STEPS = [
   {
     icon: <CheckroomIcon sx={{ fontSize: 40, color: "#1565c0" }} />,
-    title: "Pick a Jersey",
-    desc: "Browse our FIFA World Cup 2026 collection",
+    title: "Browse Jerseys",
+    desc: "Explore our FIFA World Cup 2026 jersey collection",
   },
   {
     icon: <EditIcon sx={{ fontSize: 40, color: "#1565c0" }} />,
-    title: "Add Name & Number",
-    desc: "Personalize with your name and favourite number",
+    title: "Order Your Jersey",
+    desc: "Choose your size and optionally add name & number printing",
   },
   {
     icon: <LocalShippingIcon sx={{ fontSize: 40, color: "#1565c0" }} />,
-    title: "We Print & Deliver",
-    desc: "Custom printed and shipped to your doorstep",
+    title: "Fast Delivery",
+    desc: "We deliver your jersey right to your doorstep",
   },
 ];
 
@@ -70,10 +69,11 @@ const HomeScreen = () => {
                   mb: 2,
                 }}
               >
-                Design Your Own{" "}
+                Official{" "}
                 <Box component="span" sx={{ color: "#FFD700" }}>
-                  Jersey
-                </Box>
+                  World Cup 2026
+                </Box>{" "}
+                Jerseys
               </Typography>
               <Typography
                 variant="h6"
@@ -84,7 +84,7 @@ const HomeScreen = () => {
                   fontSize: { xs: "1rem", md: "1.15rem" },
                 }}
               >
-                Add your custom name &amp; number to any jersey.
+                Shop jerseys of all 48 participating nations.
               </Typography>
               <Typography
                 variant="body1"
@@ -94,9 +94,8 @@ const HomeScreen = () => {
                   fontSize: { xs: 14, md: 15 },
                 }}
               >
-                Custom printing for just{" "}
-                <strong style={{ color: "#FFD700" }}>Rs. 200</strong> — make it
-                truly yours.
+                Want your name on the back? Add printing for just{" "}
+                <strong style={{ color: "#FFD700" }}>Rs. 200</strong>.
               </Typography>
               <Stack direction="row" spacing={2}>
                 <Button
@@ -123,15 +122,17 @@ const HomeScreen = () => {
               size={{ xs: 12, md: 6 }}
               sx={{ display: "flex", justifyContent: "center" }}
             >
-              <JerseyCustomizer
-                primaryColor="#DC143C"
-                secondaryColor="#003893"
-                playerName="YOUR NAME"
-                playerNumber={10}
-                width={300}
-                height={360}
-                variant="hero"
-                autoFlip
+              <Box
+                component="img"
+                src="/jerseys/world-cup-2026-kits.jpg"
+                alt="FIFA World Cup 2026 - 48 Participating Teams Home Kits"
+                sx={{
+                  maxWidth: "100%",
+                  maxHeight: 420,
+                  borderRadius: 4,
+                  objectFit: "contain",
+                  boxShadow: "0 8px 32px rgba(0,0,0,0.3)",
+                }}
               />
             </Grid>
           </Grid>
@@ -194,7 +195,7 @@ const HomeScreen = () => {
       {/* ── Product Grid ── */}
       <Container maxWidth="lg" sx={{ py: 4 }}>
         <Typography variant="h5" sx={{ fontWeight: 700, color: "#333", mb: 2 }}>
-          For You
+          All Jerseys
         </Typography>
 
         <Grid container spacing={1.5}>

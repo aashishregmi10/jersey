@@ -38,9 +38,9 @@ const Footer = () => {
               variant="body2"
               sx={{ color: "rgba(255,255,255,0.65)", mb: 2, lineHeight: 1.7 }}
             >
-              Your #1 destination for custom-printed FIFA jerseys in Nepal. Add
-              your name & number to any jersey — we print and deliver to your
-              doorstep. Custom printing for just Rs. 200!
+              Your #1 destination for FIFA World Cup 2026 jerseys in Nepal.
+              Order your favourite team's jersey and optionally add name &
+              number printing for just Rs. 200. Delivered to your doorstep!
             </Typography>
             <Stack direction="row" spacing={1}>
               <IconButton

@@ -27,7 +27,6 @@ import { toast } from "react-toastify";
 import axios from "axios";
 import { addItem } from "store/cartSlice";
 import useAuth from "hooks/useAuth";
-import JerseyCustomizer from "components/JerseyCustomizer";
 
 const API = import.meta.env.VITE_API_URL;
 const CUSTOMIZATION_FEE = 200;
@@ -44,6 +43,7 @@ const ProductDetailScreen = () => {
   const [rating, setRating] = useState(0);
   const [comment, setComment] = useState("");
   const [reviewLoading, setReviewLoading] = useState(false);
+  const [selectedImage, setSelectedImage] = useState(0);
 
   // Customization state
   const [customizeEnabled, setCustomizeEnabled] = useState(false);
@@ -135,9 +135,6 @@ const ProductDetailScreen = () => {
 
   const displayPrice = product.discountPrice ?? product.price;
   const hasDiscount = !!product.discountPrice;
-  const jerseyPrimary = product.primaryColor || "#1565c0";
-  const jerseySecondary = product.secondaryColor || "#FFFFFF";
-
   return (
     <Box sx={{ minHeight: "100vh", bgcolor: "#ffffff" }}>
       <Container sx={{ py: 4 }}>
@@ -256,10 +253,10 @@ const ProductDetailScreen = () => {
                     <PrintIcon sx={{ color: "#1565c0" }} />
                     <Box>
                       <Typography variant="subtitle2" fontWeight={700}>
-                        Custom Printing
+                        Name &amp; Number Printing
                       </Typography>
                       <Typography variant="caption" color="text.secondary">
-                        Add your name &amp; number (+Rs. {CUSTOMIZATION_FEE})
+                        Add printing to your jersey (+Rs. {CUSTOMIZATION_FEE})
                       </Typography>
                     </Box>
                   </Box>
@@ -279,7 +276,7 @@ const ProductDetailScreen = () => {
                       onChange={(e) =>
                         setPlayerName(e.target.value.toUpperCase().slice(0, 12))
                       }
-                      inputProps={{ maxLength: 12 }}
+                      slotProps={{ htmlInput: { maxLength: 12 } }}
                       size="small"
                       fullWidth
                       helperText={`${playerName.length}/12 characters`}
@@ -295,7 +292,7 @@ const ProductDetailScreen = () => {
                           setPlayerNumber(v);
                         }
                       }}
-                      inputProps={{ min: 1, max: 99 }}
+                      slotProps={{ htmlInput: { min: 1, max: 99 } }}
                       size="small"
                       fullWidth
                       helperText="Number between 1–99"
@@ -327,7 +324,7 @@ const ProductDetailScreen = () => {
                     }}
                   >
                     <Typography variant="body2" sx={{ color: "#1565c0" }}>
-                      🖨️ Custom Printing
+                      🖨️ Name &amp; Number Printing
                     </Typography>
                     <Typography
                       variant="body2"
@@ -391,7 +388,7 @@ const ProductDetailScreen = () => {
             </Box>
           </Grid>
 
-          {/* ── RIGHT: Live Jersey Preview (sticky, side by side) ── */}
+          {/* ── RIGHT: Product Images ── */}
           <Grid size={{ xs: 12, md: 7 }}>
             <Box
               sx={{
@@ -410,28 +407,85 @@ const ProductDetailScreen = () => {
                 minHeight: 420,
               }}
             >
-              <Typography
-                variant="overline"
-                sx={{
-                  color: "#1565c0",
-                  fontWeight: 700,
-                  letterSpacing: 2,
-                  mb: 2,
-                }}
-              >
-                Live Jersey Preview
-              </Typography>
-
-              <JerseyCustomizer
-                primaryColor={jerseyPrimary}
-                secondaryColor={jerseySecondary}
-                playerName={customizeEnabled ? playerName : ""}
-                playerNumber={
-                  customizeEnabled && playerNumber ? playerNumber : null
-                }
-                width={320}
-                height={400}
-              />
+              {product.images?.length > 0 ? (
+                <Box sx={{ width: "100%", textAlign: "center" }}>
+                  <Box
+                    component="img"
+                    src={
+                      product.images[selectedImage]?.url ||
+                      product.images[0].url
+                    }
+                    alt={product.name}
+                    sx={{
+                      maxWidth: "100%",
+                      maxHeight: 400,
+                      objectFit: "contain",
+                      borderRadius: 2,
+                    }}
+                  />
+                  {product.images.length > 1 && (
+                    <Stack
+                      direction="row"
+                      spacing={1.5}
+                      justifyContent="center"
+                      sx={{ mt: 2 }}
+                    >
+                      {product.images.map((img, idx) => (
+                        <Box
+                          key={idx}
+                          onClick={() => setSelectedImage(idx)}
+                          sx={{
+                            width: 64,
+                            height: 64,
+                            borderRadius: 1.5,
+                            overflow: "hidden",
+                            cursor: "pointer",
+                            border:
+                              selectedImage === idx
+                                ? "2px solid #1565c0"
+                                : "2px solid transparent",
+                            opacity: selectedImage === idx ? 1 : 0.6,
+                            transition: "all 0.2s",
+                            "&:hover": { opacity: 1 },
+                          }}
+                        >
+                          <Box
+                            component="img"
+                            src={img.url}
+                            alt={`View ${idx + 1}`}
+                            sx={{
+                              width: "100%",
+                              height: "100%",
+                              objectFit: "contain",
+                              bgcolor: "#f5f8fc",
+                            }}
+                          />
+                        </Box>
+                      ))}
+                    </Stack>
+                  )}
+                </Box>
+              ) : (
+                <Box
+                  sx={{
+                    width: 320,
+                    height: 400,
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    bgcolor: "#f5f8fc",
+                    borderRadius: 2,
+                  }}
+                >
+                  <SportsSoccerIcon
+                    sx={{ fontSize: 80, color: "#ccc", mb: 1 }}
+                  />
+                  <Typography variant="caption" color="text.secondary">
+                    No image available
+                  </Typography>
+                </Box>
+              )}
 
               {customizeEnabled && hasCustomization && (
                 <Chip

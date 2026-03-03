@@ -27,7 +27,6 @@ import {
   clearCart,
 } from "store/cartSlice";
 import useAuth from "hooks/useAuth";
-import JerseySilhouette from "components/JerseySilhouette";
 
 const CartScreen = () => {
   const navigate = useNavigate();
@@ -122,10 +121,39 @@ const CartScreen = () => {
                         flexShrink: 0,
                       }}
                     >
-                      <JerseySilhouette
-                        primaryColor={item.primaryColor || "#1565c0"}
-                        secondaryColor={item.secondaryColor || "#FFFFFF"}
-                      />
+                      {item.images?.[0]?.url ? (
+                        <Box
+                          component="img"
+                          src={item.images[0].url}
+                          alt={item.name}
+                          sx={{
+                            width: "100%",
+                            height: "100%",
+                            objectFit: "contain",
+                          }}
+                        />
+                      ) : (
+                        <Box
+                          sx={{
+                            width: "100%",
+                            height: "100%",
+                            display: "flex",
+                            alignItems: "center",
+                            justifyContent: "center",
+                            bgcolor: "#f4f6f8",
+                          }}
+                        >
+                          <Typography
+                            sx={{
+                              fontSize: 11,
+                              color: "#aaa",
+                              textAlign: "center",
+                            }}
+                          >
+                            No Image
+                          </Typography>
+                        </Box>
+                      )}
                     </Box>
 
                     {/* Info */}

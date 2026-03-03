@@ -144,7 +144,7 @@ const CheckoutScreen = () => {
                     value={form.phone}
                     onChange={handleChange}
                     required
-                    inputProps={{ maxLength: 15 }}
+                    slotProps={{ htmlInput: { maxLength: 15 } }}
                   />
                 </Grid>
                 <Grid item xs={12}>

@@ -1,8 +1,8 @@
 import { Box, Button, Card, IconButton, Typography } from "@mui/material";
 import FavoriteBorderIcon from "@mui/icons-material/FavoriteBorder";
-import PrintIcon from "@mui/icons-material/Print";
+import AddShoppingCartIcon from "@mui/icons-material/AddShoppingCart";
+import SportsSoccerIcon from "@mui/icons-material/SportsSoccer";
 import { useNavigate } from "react-router-dom";
-import JerseySilhouette from "components/JerseySilhouette";
 
 const ProductCard = ({ product }) => {
   const navigate = useNavigate();
@@ -85,10 +85,20 @@ const ProductCard = ({ product }) => {
             p: 2,
           }}
         >
-          <JerseySilhouette
-            primaryColor={product.primaryColor || "#1565c0"}
-            secondaryColor={product.secondaryColor || "#FFFFFF"}
-          />
+          {product.images?.[0]?.url ? (
+            <Box
+              component="img"
+              src={product.images[0].url}
+              alt={product.name}
+              sx={{
+                maxWidth: "100%",
+                maxHeight: "100%",
+                objectFit: "contain",
+              }}
+            />
+          ) : (
+            <SportsSoccerIcon sx={{ fontSize: 64, color: "#ccc" }} />
+          )}
         </Box>
 
         {/* Out of stock overlay */}
@@ -183,13 +193,15 @@ const ProductCard = ({ product }) => {
         {/* Spacer */}
         <Box sx={{ flexGrow: 1 }} />
 
-        {/* Action button — always go to detail for customization */}
+        {/* Action button — go to product detail */}
         {product.stock > 0 ? (
           <Button
             variant="contained"
             size="small"
             fullWidth
-            startIcon={<PrintIcon sx={{ fontSize: "16px !important" }} />}
+            startIcon={
+              <AddShoppingCartIcon sx={{ fontSize: "16px !important" }} />
+            }
             onClick={(e) => {
               e.stopPropagation();
               navigate(`/product/${product._id}`);
@@ -209,7 +221,7 @@ const ProductCard = ({ product }) => {
               },
             }}
           >
-            Customize &amp; Order
+            View &amp; Order
           </Button>
         ) : null}
       </Box>

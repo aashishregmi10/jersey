@@ -64,8 +64,8 @@ const Navbar = () => {
           letterSpacing: 0.3,
         }}
       >
-        🖨️ Custom Name & Number Printing on Every Jersey! &nbsp;|&nbsp; +Rs. 200
-        Only &nbsp;|&nbsp; Free Delivery Nationwide
+        ⚽ FIFA World Cup 2026 Jerseys Now Available! &nbsp;|&nbsp; Name &
+        Number Printing +Rs. 200 &nbsp;|&nbsp; Free Delivery Nationwide
       </Box>
 
       <AppBar
